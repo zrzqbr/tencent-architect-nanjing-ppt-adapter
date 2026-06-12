@@ -172,26 +172,6 @@ python scripts/apply_template.py --input your.pptx --output branded.pptx
 
 </details>
 
-<details>
-<summary><strong>📝 场景二：迁移已有 PPT 到品牌模板</strong></summary>
-
-<br>
-
-> 💡 适用场景：嘉宾/讲师已有 PPT，需要套用统一模板，直接由本 Skill 完成适配
-
-```text
-请帮我将附件中的 PPT 迁移到腾讯云架构师长沙同盟模板。
-
-要求：
-- 调用腾讯云架构师长沙同盟 PPT 模板适配 Skill 完成迁移
-- 保留原始 PPT 的所有内容、版式和图表，不要修改文案
-- 替换背景为品牌模板背景
-- 字体统一为 TencentSans
-- 插入品牌 Logo（封面左上角，内容页右上角）
-- 检查配色合规性，替换禁用色
-```
-
-</details>
 
 ---
 
@@ -272,8 +252,6 @@ tencent-architect-changsha-ppt-adapter/
 <sub>
 
 **本 Skill 不创作 PPT，它让 PPT 形成专属腾讯云架构师长沙同盟的统一风格。**
-
-Made with ❤️ by [zrzqbr](https://github.com/zrzqbr) · Powered by [WorkBuddy](https://www.codebuddy.cn)
 
 </sub>
 

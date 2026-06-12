@@ -47,37 +47,31 @@
 
 <table>
   <tr>
-    <td align="center" width="25%">
-      <br>
-      <img src="https://img.shields.io/badge/🎨-BG-D80C01?style=for-the-badge" alt="BG">
-      <br><br>
-      <strong>背景适配</strong><br>
-      <sub>自动识别页面类型<br>替换为品牌模板背景图<br>封面/内容页智能区分</sub>
-      <br><br>
+    <th align="center" width="25%">🎨 背景适配</th>
+    <th align="center" width="25%">🔤 字体统一</th>
+    <th align="center" width="25%">🏷️ Logo 定位</th>
+    <th align="center" width="25%">🎯 配色合规</th>
+  </tr>
+  <tr>
+    <td align="center">
+      自动识别页面类型<br>
+      替换为品牌模板背景图<br>
+      封面 / 内容页智能区分
     </td>
-    <td align="center" width="25%">
-      <br>
-      <img src="https://img.shields.io/badge/🔤-Font-F19D19?style=for-the-badge" alt="Font">
-      <br><br>
-      <strong>字体统一</strong><br>
-      <sub>全文替换为 TencentSans<br>标题 W7 / 正文 W3<br>代码字体保留不替换</sub>
-      <br><br>
+    <td align="center">
+      全文替换为 TencentSans<br>
+      标题 W7 / 正文 W3<br>
+      代码等宽字体保留不替换
     </td>
-    <td align="center" width="25%">
-      <br>
-      <img src="https://img.shields.io/badge/🏷️-Logo-1D6FA9?style=for-the-badge" alt="Logo">
-      <br><br>
-      <strong>Logo 定位</strong><br>
-      <sub>按页面类型精准插入<br>封面左上 / 内容右上<br>自动去重防重复</sub>
-      <br><br>
+    <td align="center">
+      按页面类型精准插入<br>
+      封面左上 / 内容右上<br>
+      自动去重防重复
     </td>
-    <td align="center" width="25%">
-      <br>
-      <img src="https://img.shields.io/badge/🎯-Color-D4A574?style=for-the-badge" alt="Color">
-      <br><br>
-      <strong>配色合规</strong><br>
-      <sub>检测禁用色自动替换<br>暖色系安全调色板<br>对比度自动修复</sub>
-      <br><br>
+    <td align="center">
+      检测禁用色自动替换<br>
+      暖色系安全调色板<br>
+      对比度自动修复
     </td>
   </tr>
 </table>
@@ -113,21 +107,40 @@ python scripts/apply_template.py --input your.pptx --output branded.pptx
 
 ## 📋 两种使用模式
 
-### 模式 A：生成 + 适配（推荐）
-
-```
-┌──────────────────┐      ┌────────────────────────────────────────┐      ┌─────────────────┐
-│  输入主题 + 大纲  │  ──▶  │  PPT 生成 Skill + 本适配 Skill 协同工作  │  ──▶  │  品牌化 .pptx   │
-└──────────────────┘      └────────────────────────────────────────┘      └─────────────────┘
-```
-
-### 模式 B：迁移已有 PPT
-
-```
-┌──────────────────┐      ┌──────────────┐      ┌──────────────────────┐
-│  原始 .pptx 上传  │  ──▶  │  模板适配引擎  │  ──▶  │  输出适配后 .pptx    │
-└──────────────────┘      └──────────────┘      └──────────────────────┘
-```
+<table>
+  <tr>
+    <th width="50%">⭐ 模式 A：生成 + 适配（推荐）</th>
+    <th width="50%">🔄 模式 B：迁移已有 PPT</th>
+  </tr>
+  <tr>
+    <td>
+      <p align="center">
+        <strong>输入主题 + 大纲</strong><br>
+        ⬇️<br>
+        PPT 生成 Skill 创建内容<br>
+        ⬇️<br>
+        本适配 Skill 注入品牌风格<br>
+        ⬇️<br>
+        <strong>✅ 输出品牌化 .pptx</strong>
+      </p>
+    </td>
+    <td>
+      <p align="center">
+        <strong>上传已有 .pptx</strong><br>
+        ⬇️<br>
+        模板适配引擎处理<br>
+        ⬇️<br>
+        保留内容 · 替换品牌资产<br>
+        ⬇️<br>
+        <strong>✅ 输出适配后 .pptx</strong>
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><sub>两个 Skill 协同：一个管内容，一个管风格</sub></td>
+    <td align="center"><sub>完全不碰内容，只替换背景/字体/Logo/配色</sub></td>
+  </tr>
+</table>
 
 ---
 

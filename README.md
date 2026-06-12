@@ -11,7 +11,7 @@
 
 **腾讯云架构师长沙同盟 · PPT 模板适配 Skill**
 
-<sub>一键将任意 PPT 适配为专属腾讯云架构师长沙同盟品牌风格 — 只锁品牌，不碰内容</sub>
+<sub>一键将任意 PPT 适配为专属腾讯云架构师长沙同盟风格 — 只锁品牌，不碰内容</sub>
 
 <br>
 
@@ -25,10 +25,12 @@
 
 ## 💡 Skill 定位
 
-> **这是一个 PPT 品牌适配工具，不是内容创作器。**
+> **这是一个 PPT 模板适配 Skill，不是内容创作器。**
 >
 > 它的唯一职责：在不破坏讲师/嘉宾创作成果的前提下，让最终 PPT 继承统一模板的品牌资产。  
 > 适用于沙龙分享、技术讲座、架构评审等场景。
+>
+> **核心原则：** 只锁四项品牌资产（背景、字体、Logo、配色），其他一切不强制。
 
 <table>
   <tr>
@@ -140,9 +142,9 @@ python scripts/apply_template.py --input your.pptx --output branded.pptx
 
 ---
 
-## 💬 提示词模板
+## 💬 提示词模板（直接复制使用）
 
-> 💡 **使用建议**：将你常用的 PPT 生成 Skill 与本适配 Skill 搭配使用，内容创作与品牌风格适配各司其职。
+> 💡 **使用建议**：将你常用的 PPT 生成 Skill 与本适配 Skill 搭配使用，内容创作与品牌风格适配各司其职，没有先后顺序限制。
 
 <details>
 <summary><strong>📝 场景一：配合其他 Skill 适配专属腾讯云架构师长沙同盟 PPT 风格</strong></summary>
@@ -206,6 +208,8 @@ python scripts/apply_template.py --input your.pptx --output branded.pptx
   <img src="https://img.shields.io/badge/保留内容只替换背景%2F字体%2FLogo%2F配色-1D6FA9?style=flat-square" alt="">
 </p>
 
+> 💡 **提示：** 可以直接把上面的提示词模板复制到 WorkBuddy 对话框中使用，填入你的具体内容即可一键完成 PPT 制作或迁移。
+
 ---
 
 ## ⚠️ 注意事项
@@ -213,7 +217,7 @@ python scripts/apply_template.py --input your.pptx --output branded.pptx
 | | 说明 |
 |:---:|------|
 | 🔒 | 本 Skill **只做风格适配**，不会修改你的文案内容和页面布局 |
-| 📂 | 支持多种输入格式：`.pptx`、`HTML`、`Markdown` |
+| 📂 | 支持多种输出格式，包括 `.pptx`、`HTML`、`Markdown` 等 |
 | 📎 | 迁移模式需将原始 PPT 作为附件上传到对话中 |
 | ⚖️ | TencentSans 字体为腾讯品牌字体，请确认使用授权 |
 

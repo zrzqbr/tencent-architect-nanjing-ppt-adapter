@@ -129,7 +129,7 @@
 
 ## 获取 & 反馈
 
-- **GitHub 仓库：** https://github.com/zrzqbr/-PPT-
+- **GitHub 仓库：** https://github.com/zrzqbr/tencent-architect-changsha-ppt-adapter
 - **意见反馈：** https://wj.qq.com/s2/26990654/bded
 
 ---

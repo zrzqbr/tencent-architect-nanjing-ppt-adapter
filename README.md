@@ -1,49 +1,84 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.9+-blue?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
-  <img src="https://img.shields.io/badge/python--pptx-0.6.21+-orange" alt="python-pptx">
-  <img src="https://img.shields.io/badge/Platform-WorkBuddy%20Skill-blueviolet" alt="Platform">
-</p>
+<div align="center">
 
-<h1 align="center">Tencent Architect Changsha PPT Adapter</h1>
+<img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+<img src="https://img.shields.io/badge/License-MIT-2ea44f?style=for-the-badge" alt="License">
+<img src="https://img.shields.io/badge/python--pptx-0.6.21+-E76F00?style=for-the-badge" alt="python-pptx">
+<img src="https://img.shields.io/badge/WorkBuddy-Skill-7C3AED?style=for-the-badge" alt="Platform">
 
-<p align="center">
-  <strong>腾讯云架构师长沙同盟 PPT 模板适配 Skill</strong><br>
-  <sub>一键将任意 PPT 适配为专属腾讯云架构师长沙同盟品牌风格</sub>
-</p>
+<br><br>
 
-<p align="center">
-  <a href="#-快速开始">快速开始</a> &bull;
-  <a href="#-核心能力">核心能力</a> &bull;
-  <a href="#-使用模式">使用模式</a> &bull;
-  <a href="#-目录结构">目录结构</a> &bull;
-  <a href="#-反馈">反馈</a>
-</p>
+# 🏛️ Tencent Architect Changsha PPT Adapter
+
+**腾讯云架构师长沙同盟 · PPT 模板适配 Skill**
+
+<sub>一键将任意 PPT 适配为专属腾讯云架构师长沙同盟品牌风格 — 只锁品牌，不碰内容</sub>
+
+<br>
+
+[🚀 快速开始](#-快速开始) · [✨ 核心能力](#-四大核心能力) · [📋 使用模式](#-两种使用模式) · [💬 提示词](#-提示词模板) · [📁 结构](#-目录结构)
+
+<br>
 
 ---
 
-## 💡 这是什么
+</div>
+
+## 💡 Skill 定位
 
 > **这是一个 PPT 品牌适配工具，不是内容创作器。**
-
-它的唯一职责：在不破坏讲师/嘉宾创作成果的前提下，让最终 PPT 继承统一模板的品牌资产。
-
-**核心原则** — 只锁四项品牌资产，其他一切不强制：
-
-```
-背景 ✓ · 字体 ✓ · Logo ✓ · 配色 ✓ · 内容 ✗ · 版式 ✗ · 图表 ✗
-```
-
----
-
-## ✨ 核心能力
+>
+> 它的唯一职责：在不破坏讲师/嘉宾创作成果的前提下，让最终 PPT 继承统一模板的品牌资产。  
+> 适用于沙龙分享、技术讲座、架构评审等场景。
 
 <table>
   <tr>
-    <td align="center" width="25%"><h3>🎨</h3><strong>背景适配</strong><br><sub>自动替换为品牌模板背景图</sub></td>
-    <td align="center" width="25%"><h3>🔤</h3><strong>字体统一</strong><br><sub>替换为 TencentSans W7/W3</sub></td>
-    <td align="center" width="25%"><h3>🏷️</h3><strong>Logo 定位</strong><br><sub>按页面类型精准插入 Logo</sub></td>
-    <td align="center" width="25%"><h3>🎯</h3><strong>配色合规</strong><br><sub>检测禁用色并自动替换</sub></td>
+    <td>✅ 锁定</td>
+    <td><strong>背景</strong> · <strong>字体</strong> · <strong>Logo</strong> · <strong>配色</strong></td>
+  </tr>
+  <tr>
+    <td>🚫 不碰</td>
+    <td>内容文案 · 页面版式 · 图表数据 · 动画效果</td>
+  </tr>
+</table>
+
+---
+
+## ✨ 四大核心能力
+
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <br>
+      <img src="https://img.shields.io/badge/🎨-BG-D80C01?style=for-the-badge" alt="BG">
+      <br><br>
+      <strong>背景适配</strong><br>
+      <sub>自动识别页面类型<br>替换为品牌模板背景图<br>封面/内容页智能区分</sub>
+      <br><br>
+    </td>
+    <td align="center" width="25%">
+      <br>
+      <img src="https://img.shields.io/badge/🔤-Font-F19D19?style=for-the-badge" alt="Font">
+      <br><br>
+      <strong>字体统一</strong><br>
+      <sub>全文替换为 TencentSans<br>标题 W7 / 正文 W3<br>代码字体保留不替换</sub>
+      <br><br>
+    </td>
+    <td align="center" width="25%">
+      <br>
+      <img src="https://img.shields.io/badge/🏷️-Logo-1D6FA9?style=for-the-badge" alt="Logo">
+      <br><br>
+      <strong>Logo 定位</strong><br>
+      <sub>按页面类型精准插入<br>封面左上 / 内容右上<br>自动去重防重复</sub>
+      <br><br>
+    </td>
+    <td align="center" width="25%">
+      <br>
+      <img src="https://img.shields.io/badge/🎯-Color-D4A574?style=for-the-badge" alt="Color">
+      <br><br>
+      <strong>配色合规</strong><br>
+      <sub>检测禁用色自动替换<br>暖色系安全调色板<br>对比度自动修复</sub>
+      <br><br>
+    </td>
   </tr>
 </table>
 
@@ -52,44 +87,58 @@
 ## 🚀 快速开始
 
 ```bash
-# 1. 克隆仓库
+# 1️⃣ 克隆仓库
 git clone https://github.com/zrzqbr/tencent-architect-changsha-ppt-adapter.git
 cd tencent-architect-changsha-ppt-adapter
 
-# 2. 安装依赖
+# 2️⃣ 安装依赖
 pip install -r requirements.txt
 
-# 3. 运行适配
+# 3️⃣ 运行适配
 python scripts/apply_template.py --input your.pptx --output branded.pptx
 ```
 
-### 环境要求
-
-- Python 3.9+
-- 依赖：`python-pptx` · `lxml` · `Pillow` · `beautifulsoup4`
+<table>
+  <tr>
+    <td><strong>环境要求</strong></td>
+    <td>Python 3.9+ &nbsp;·&nbsp; pip</td>
+  </tr>
+  <tr>
+    <td><strong>核心依赖</strong></td>
+    <td><code>python-pptx</code> · <code>lxml</code> · <code>Pillow</code> · <code>beautifulsoup4</code></td>
+  </tr>
+</table>
 
 ---
 
-## 📋 使用模式
+## 📋 两种使用模式
 
-### 模式 A：生成 + 适配
+### 模式 A：生成 + 适配（推荐）
 
 ```
-输入主题 + 大纲  →  PPT 生成 Skill + 本适配 Skill 协同  →  品牌化 .pptx
+┌──────────────────┐      ┌────────────────────────────────────────┐      ┌─────────────────┐
+│  输入主题 + 大纲  │  ──▶  │  PPT 生成 Skill + 本适配 Skill 协同工作  │  ──▶  │  品牌化 .pptx   │
+└──────────────────┘      └────────────────────────────────────────┘      └─────────────────┘
 ```
 
 ### 模式 B：迁移已有 PPT
 
 ```
-原始 .pptx  →  模板适配  →  品牌化 .pptx
+┌──────────────────┐      ┌──────────────┐      ┌──────────────────────┐
+│  原始 .pptx 上传  │  ──▶  │  模板适配引擎  │  ──▶  │  输出适配后 .pptx    │
+└──────────────────┘      └──────────────┘      └──────────────────────┘
 ```
 
 ---
 
 ## 💬 提示词模板
 
+> 💡 **使用建议**：将你常用的 PPT 生成 Skill 与本适配 Skill 搭配使用，内容创作与品牌风格适配各司其职。
+
 <details>
-<summary><strong>场景一：配合 PPT 生成 Skill 使用</strong></summary>
+<summary><strong>📝 场景一：配合 PPT 生成 Skill 制作全新 PPT</strong></summary>
+
+<br>
 
 ```text
 请帮我制作一份腾讯云架构师技术同盟沙龙 PPT。
@@ -111,7 +160,9 @@ python scripts/apply_template.py --input your.pptx --output branded.pptx
 </details>
 
 <details>
-<summary><strong>场景二：迁移已有 PPT 到品牌模板</strong></summary>
+<summary><strong>📝 场景二：迁移已有 PPT 到品牌模板</strong></summary>
+
+<br>
 
 ```text
 请帮我将附件中的 PPT 迁移到腾讯云架构师长沙同盟模板。
@@ -129,11 +180,29 @@ python scripts/apply_template.py --input your.pptx --output branded.pptx
 
 ---
 
-## 🔑 触发关键词
+## 🏷️ 触发场景
 
 以下关键词会触发本 Skill：
 
-`腾讯云架构师技术同盟模板` · `长沙同盟 PPT` · `把 PPT 套到模板` · `嘉宾 PPT 换统一模板` · `沙龙模板适配` · `保留内容只替换背景/字体/Logo/配色`
+<p>
+  <img src="https://img.shields.io/badge/腾讯云架构师技术同盟模板-D80C01?style=flat-square" alt="">
+  <img src="https://img.shields.io/badge/长沙同盟%20PPT-D80C01?style=flat-square" alt="">
+  <img src="https://img.shields.io/badge/把%20PPT%20套到模板-F19D19?style=flat-square" alt="">
+  <img src="https://img.shields.io/badge/嘉宾%20PPT%20换统一模板-F19D19?style=flat-square" alt="">
+  <img src="https://img.shields.io/badge/沙龙模板适配-1D6FA9?style=flat-square" alt="">
+  <img src="https://img.shields.io/badge/保留内容只替换背景%2F字体%2FLogo%2F配色-1D6FA9?style=flat-square" alt="">
+</p>
+
+---
+
+## ⚠️ 注意事项
+
+| | 说明 |
+|:---:|------|
+| 🔒 | 本 Skill **只做风格适配**，不会修改你的文案内容和页面布局 |
+| 📂 | 支持多种输入格式：`.pptx`、`HTML`、`Markdown` |
+| 📎 | 迁移模式需将原始 PPT 作为附件上传到对话中 |
+| ⚖️ | TencentSans 字体为腾讯品牌字体，请确认使用授权 |
 
 ---
 
@@ -141,51 +210,54 @@ python scripts/apply_template.py --input your.pptx --output branded.pptx
 
 ```
 tencent-architect-changsha-ppt-adapter/
-├── 📄 SKILL.md                         # 主文档（1479 行，含完整迁移经验）
-├── 📄 README.md                        # 本文件
-├── 📄 LICENSE                          # MIT 协议
-├── 📄 requirements.txt                 # Python 依赖
-├── 📂 scripts/
-│   ├── apply_template.py               # 统一入口脚本 v8
-│   ├── html_to_pptx.py                # HTML → PPTX 核心转换
-│   ├── verify_output.py               # 输出质量验证（42 项检查）
-│   ├── brand_palette.py               # 配色校验 + 上游约束
-│   ├── extract_template_assets.py     # 模板资产提取
-│   └── test_v5.py                     # 自动化测试套件
-├── 📂 assets/
-│   ├── backgrounds/                   # 品牌背景图
-│   ├── logos/                         # 品牌 Logo
-│   ├── fonts/                         # TencentSans W3/W7
-│   └── templates/                     # 城市模板源文件
-└── 📂 references/
-    ├── brand-rules.md                 # 品牌规范补充
-    └── changelog-v1-v5.md             # 实战经验沉淀
+│
+├── 📋 SKILL.md                         # 主文档（1479 行，完整迁移经验 & 品牌规范）
+├── 📖 README.md                        # 本文件
+├── 📜 LICENSE                          # MIT 开源协议
+├── 📦 requirements.txt                 # Python 依赖清单
+│
+├── 🔧 scripts/                         # 核心脚本
+│   ├── apply_template.py               # 统一入口 · 模板适配引擎 v8
+│   ├── html_to_pptx.py                 # HTML → PPTX 核心转换
+│   ├── verify_output.py                # 输出质量验证（42 项检查）
+│   ├── brand_palette.py                # 配色校验 + 上游约束注入
+│   ├── extract_template_assets.py      # 模板资产提取工具
+│   └── test_v5.py                      # 自动化测试套件
+│
+├── 🎨 assets/                          # 品牌资产
+│   ├── backgrounds/                    # 品牌背景图（封面 + 内容页）
+│   ├── logos/                          # 品牌 Logo（横版主 Logo）
+│   ├── fonts/                          # TencentSans W3 / W7
+│   └── templates/                      # 城市模板源文件
+│
+└── 📚 references/                      # 参考文档
+    ├── brand-rules.md                  # 品牌规范详细补充
+    └── changelog-v1-v5.md              # 版本演进 & 实战经验沉淀
 ```
-
----
-
-## ⚠️ 注意事项
-
-- 本工具**只做风格适配**，不会修改你的文案内容和页面布局
-- 支持多种输入格式：`.pptx`、`HTML`、`Markdown`
-- 迁移模式需将原始 PPT 作为附件上传
-- TencentSans 字体为腾讯品牌字体，请确认使用授权
 
 ---
 
 ## 🤝 贡献
 
-欢迎提交 Issue 和 Pull Request！
+欢迎提交 Issue 和 Pull Request！无论是 Bug 反馈、功能建议还是代码贡献，都非常感谢。
 
 ---
 
 ## 📬 反馈
 
-- **意见反馈问卷：** https://wj.qq.com/s2/26990654/bded
+- **GitHub Issues：** [提交问题](https://github.com/zrzqbr/tencent-architect-changsha-ppt-adapter/issues)
+- **意见反馈问卷：** [https://wj.qq.com/s2/26990654/bded](https://wj.qq.com/s2/26990654/bded)
 
 ---
 
-<p align="center">
-  <sub>本工具不创作 PPT，它让 PPT 形成专属腾讯云架构师长沙同盟的统一风格。</sub><br>
-  <sub>Made with ❤️ by <a href="https://github.com/zrzqbr">zrzqbr</a></sub>
-</p>
+<div align="center">
+
+<sub>
+
+**本 Skill 不创作 PPT，它让 PPT 形成专属腾讯云架构师长沙同盟的统一风格。**
+
+Made with ❤️ by [zrzqbr](https://github.com/zrzqbr) · Powered by [WorkBuddy](https://www.codebuddy.cn)
+
+</sub>
+
+</div>

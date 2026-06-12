@@ -109,36 +109,32 @@ python scripts/apply_template.py --input your.pptx --output branded.pptx
 
 <table>
   <tr>
-    <th width="50%">⭐ 模式 A：生成 + 适配（推荐）</th>
+    <th width="50%">⭐ 模式 A：常用 PPT 生成 Skill + 适配 Skill 搭配使用</th>
     <th width="50%">🔄 模式 B：迁移已有 PPT</th>
   </tr>
   <tr>
-    <td>
-      <p align="center">
-        <strong>输入主题 + 大纲</strong><br>
-        ⬇️<br>
-        PPT 生成 Skill 创建内容<br>
-        ⬇️<br>
-        本适配 Skill 注入品牌风格<br>
-        ⬇️<br>
-        <strong>✅ 输出品牌化 .pptx</strong>
-      </p>
+    <td align="center">
+      <br>
+      <code>输入主题 + 大纲</code><br>
+      &nbsp;&nbsp;⬇️<br>
+      <code>常用 PPT 生成 Skill + 本适配 Skill 协同工作</code><br>
+      &nbsp;&nbsp;⬇️<br>
+      <code>输出 .pptx</code>
+      <br><br>
     </td>
-    <td>
-      <p align="center">
-        <strong>上传已有 .pptx</strong><br>
-        ⬇️<br>
-        模板适配引擎处理<br>
-        ⬇️<br>
-        保留内容 · 替换品牌资产<br>
-        ⬇️<br>
-        <strong>✅ 输出适配后 .pptx</strong>
-      </p>
+    <td align="center">
+      <br>
+      <code>输入原始 .pptx</code><br>
+      &nbsp;&nbsp;⬇️<br>
+      <code>模板适配</code><br>
+      &nbsp;&nbsp;⬇️<br>
+      <code>输出适配后 .pptx</code>
+      <br><br>
     </td>
   </tr>
   <tr>
-    <td align="center"><sub>两个 Skill 协同：一个管内容，一个管风格</sub></td>
-    <td align="center"><sub>完全不碰内容，只替换背景/字体/Logo/配色</sub></td>
+    <td align="center"><sub>内容创作与品牌风格适配各司其职，没有先后顺序限制</sub></td>
+    <td align="center"><sub>嘉宾/讲师已有 PPT，直接由本 Skill 完成适配</sub></td>
   </tr>
 </table>
 
@@ -149,9 +145,11 @@ python scripts/apply_template.py --input your.pptx --output branded.pptx
 > 💡 **使用建议**：将你常用的 PPT 生成 Skill 与本适配 Skill 搭配使用，内容创作与品牌风格适配各司其职。
 
 <details>
-<summary><strong>📝 场景一：配合 PPT 生成 Skill 制作全新 PPT</strong></summary>
+<summary><strong>📝 场景一：配合其他 Skill 适配专属腾讯云架构师长沙同盟 PPT 风格</strong></summary>
 
 <br>
+
+> 💡 适用场景：将你常用的 PPT 生成 Skill 与本适配 Skill 搭配使用
 
 ```text
 请帮我制作一份腾讯云架构师技术同盟沙龙 PPT。
@@ -176,6 +174,8 @@ python scripts/apply_template.py --input your.pptx --output branded.pptx
 <summary><strong>📝 场景二：迁移已有 PPT 到品牌模板</strong></summary>
 
 <br>
+
+> 💡 适用场景：嘉宾/讲师已有 PPT，需要套用统一模板，直接由本 Skill 完成适配
 
 ```text
 请帮我将附件中的 PPT 迁移到腾讯云架构师长沙同盟模板。

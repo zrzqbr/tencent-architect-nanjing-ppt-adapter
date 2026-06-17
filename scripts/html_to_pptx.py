@@ -153,20 +153,22 @@ class ContentBlock:
         self.ordered = kwargs.get('ordered', False)  # ordered list
 
 
+SLIDE_CLASS_PATTERN = re.compile(r'(?:^|\s)slide(?:\s|$)')
+
 def is_slide_deck_html(html_content: str) -> bool:
     """检测 HTML 是否是幻灯片演示型（如 reveal.js / impress.js / 自定义 slide deck）。
 
     检测标准：存在 3 个以上具有 class="slide" 或 data-slide 属性的 div。
     """
     soup = BeautifulSoup(html_content, 'lxml')
-    slides = soup.find_all('div', class_=re.compile(r'\bslide\b'))
+    slides = soup.find_all('div', class_=SLIDE_CLASS_PATTERN)
     if len(slides) >= 3:
         return True
     slides_by_attr = soup.find_all('div', attrs={'data-slide': True})
     if len(slides_by_attr) >= 3:
         return True
     # 也检查 section.slide（reveal.js 风格）
-    slides_section = soup.find_all('section', class_=re.compile(r'\bslide\b'))
+    slides_section = soup.find_all('section', class_=SLIDE_CLASS_PATTERN)
     if len(slides_section) >= 3:
         return True
     return False
@@ -277,27 +279,46 @@ def parse_html_slides(html_content: str) -> List[SlideContent]:
     soup = BeautifulSoup(html_content, 'lxml')
 
     # 找所有 slide 元素
-    slides = soup.find_all('div', class_=re.compile(r'\bslide\b'))
+    slides = soup.find_all('div', class_=SLIDE_CLASS_PATTERN)
     if not slides:
         slides = soup.find_all('div', attrs={'data-slide': True})
     if not slides:
-        slides = soup.find_all('section', class_=re.compile(r'\bslide\b'))
+        slides = soup.find_all('section', class_=SLIDE_CLASS_PATTERN)
 
     results = []
-    for slide_elem in slides:
+    total_slides = len(slides)
+    for idx, slide_elem in enumerate(slides):
         sc = SlideContent()
 
         # ---------- 判断页面类型 ----------
         classes = ' '.join(slide_elem.get('class', []))
-        if 'title-page' in classes or 'slide-title' in classes:
+        text_content = slide_elem.get_text(strip=True)
+
+        # 封面页检测（优先级高）
+        if ('title-page' in classes or 'slide-title' in classes or
+            slide_elem.find(class_='cover-layout') or
+            slide_elem.find(class_='cover-title') or
+            slide_elem.find(class_='cover-eyebrow')):
             sc.slide_type = 'cover'
         elif 'slide-center' in classes:
             # 可能是章节页或结尾页，看内容判断
-            text_content = slide_elem.get_text(strip=True)
-            if '谢谢' in text_content or 'Thanks' in text_content.lower() or 'thank' in text_content.lower():
+            if '谢谢' in text_content or 'Thanks' in text_content.lower() or 'thank' in text_content.lower() or '感谢' in text_content:
                 sc.slide_type = 'end'
             else:
                 sc.slide_type = 'section'
+        elif 'slide-end' in classes:
+            sc.slide_type = 'end'
+        elif idx == total_slides - 1 and ('谢谢' in text_content or '感谢' in text_content or 'Thanks' in text_content):
+            # 最后一页包含感谢内容 → 结尾页
+            sc.slide_type = 'end'
+        elif idx == 0:
+            # 第一页无明确类型标记 → 按内容结构试判封面
+            if (slide_elem.find(class_='cover-layout') or
+                slide_elem.find(class_='tech-visual') and
+                len(text_content) > 20):
+                sc.slide_type = 'cover'
+            else:
+                sc.slide_type = 'cover'  # 无论如何第一页默认为封面
 
         # ---------- 提取编号 ----------
         section_num = slide_elem.find(class_='section-num')
@@ -307,8 +328,16 @@ def parse_html_slides(html_content: str) -> List[SlideContent]:
         # ---------- 提取标题 ----------
         title_main = slide_elem.find(class_='title-main')
         section_heading = slide_elem.find(class_='section-heading')
+        cover_title_elem = slide_elem.find(class_='cover-title')
+        cover_sub_elem = slide_elem.find(class_='cover-sub')
         if title_main:
             sc.title = title_main.get_text(strip=True)
+            sc.slide_type = 'cover'
+        elif cover_title_elem:
+            sc.title = cover_title_elem.get_text(strip=True)
+            # 如果有 cover-sub，合并为完整标题
+            if cover_sub_elem:
+                sc.title += ' — ' + cover_sub_elem.get_text(strip=True)
             sc.slide_type = 'cover'
         elif section_heading:
             sc.title = section_heading.get_text(strip=True)
@@ -321,12 +350,17 @@ def parse_html_slides(html_content: str) -> List[SlideContent]:
         # ---------- 提取作者 ----------
         # 封面页特有
         if sc.slide_type == 'cover':
-            # 在封面中找作者信息（通常在 title 下面的 div 中）
-            for div in slide_elem.find_all('div', recursive=True):
-                text = div.get_text(strip=True)
-                if '|' in text and len(text) < 100:
-                    sc.author = text
-                    break
+            # 在封面中找作者信息
+            author_elem = slide_elem.find(class_='meta-value')
+            if author_elem:
+                sc.author = author_elem.get_text(strip=True)
+            else:
+                # 回退：找包含 | 或 / 的短文本
+                for div in slide_elem.find_all('div', recursive=True):
+                    text = div.get_text(strip=True)
+                    if ('|' in text or '/' in text) and len(text) < 100:
+                        sc.author = text
+                        break
 
         # ---------- 提取标签 ----------
         tags_container = slide_elem.find(class_='title-tags')

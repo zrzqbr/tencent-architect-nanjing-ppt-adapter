@@ -178,8 +178,11 @@ def count_html_slides(html_path):
         with open(html_path, 'r', encoding='utf-8') as f:
             soup = BeautifulSoup(f.read(), 'lxml')
 
+        # 精确匹配 class="slide"（避免误匹 slide-footer/slide-header/slide-body）
+        slide_pattern = re.compile(r'(?:^|\s)slide(?:\s|$)')
+
         # 尝试多种 slide 标记
-        slides = soup.find_all('div', class_=re.compile(r'\bslide\b'))
+        slides = soup.find_all('div', class_=slide_pattern)
         if len(slides) >= 3:
             return len(slides)
 
@@ -187,7 +190,7 @@ def count_html_slides(html_path):
         if len(slides) >= 3:
             return len(slides)
 
-        slides = soup.find_all('section', class_=re.compile(r'\bslide\b'))
+        slides = soup.find_all('section', class_=slide_pattern)
         if len(slides) >= 3:
             return len(slides)
 

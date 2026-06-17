@@ -5,32 +5,47 @@
 <img src="https://img.shields.io/badge/python--pptx-1.0+-3272DC?style=for-the-badge" alt="python-pptx">
 <img src="https://img.shields.io/badge/WorkBuddy-Skill-08194B?style=for-the-badge" alt="Platform">
 
-# Tencent Architect Nanjing PPT Adapter
+<br><br>
+
+# 🏛️ Tencent Architect Nanjing PPT Adapter
 
 **腾讯云架构师南京城市沙龙 · PPT 模板适配 Skill**
 
-<sub>一键将 PPT / HTML / Markdown 适配为南京城市沙龙模板风格 —— 只锁品牌，不碰内容</sub>
+<sub>一键将任意 PPT 适配为专属腾讯云架构师南京城市沙龙风格 — 只锁品牌，不碰内容</sub>
+
+<br>
+
+[🚀 快速开始](#-快速开始) · [✨ 核心能力](#-四大核心能力) · [📋 使用模式](#-两种使用模式) · [💬 提示词](#-提示词模板) · [📁 结构](#-目录结构)
+
+<br>
+
+---
 
 </div>
 
+## 💡 Skill 定位
+
+> **这是一个 PPT 模板适配 Skill，不是内容创作器。**
+>
+> 它的唯一职责：在不破坏讲师/嘉宾创作成果的前提下，让最终 PPT 继承统一模板的品牌资产。
+> 适用于沙龙分享、技术讲座、架构评审等场景。
+>
+> **核心原则：** 只锁品牌资产（背景、字体、配色），其他一切不强制。
+
+<table>
+  <tr>
+    <td>✅ 锁定</td>
+    <td><strong>背景</strong> · <strong>字体</strong> · <strong>配色</strong></td>
+  </tr>
+  <tr>
+    <td>🚫 不碰</td>
+    <td>内容文案 · 页面版式 · 图表数据 · 动画效果</td>
+  </tr>
+</table>
+
 ---
 
-## 定位
-
-这是一个 **PPT 模板适配 Skill**，不是内容创作器。
-
-它保留讲师/嘉宾原始内容、版式和图表，只统一：
-
-- 南京模板背景
-- TencentSans 字体
-- 南京限定 7 色色板
-- 南京页眉安全区与输出验证
-
-南京模板默认不强制插入旧横版 Logo；当前 `assets/logos/` 不再保留旧模板 Logo。
-
----
-
-## 南京限定色板
+## 🎨 南京限定色板
 
 只能使用以下 7 个颜色：
 
@@ -44,104 +59,248 @@
 #8B8C8C  中灰辅助
 ```
 
-图表顺序：
+图表配色顺序：
 
 ```text
 #3272DC → #08194B → #00C8D8 → #01A4FF → #44474F → #8B8C8C
 ```
 
-禁止继续使用旧红/暖色体系：`#D80C01`、`#FF0000`、`#FAF6EE`、`#D4A574`、`#FAD16A`、`#F19D19`。
+禁止使用旧红/暖色体系：`#D80C01`、`#FF0000`、`#FAF6EE`、`#D4A574`、`#FAD16A`、`#F19D19`。
 
 ---
 
-## 快速开始
+## ✨ 四大核心能力
+
+<table>
+  <tr>
+    <th align="center" width="25%">🎨 背景适配</th>
+    <th align="center" width="25%">🔤 字体统一</th>
+    <th align="center" width="25%">🎯 配色合规</th>
+    <th align="center" width="25%">✅ 输出验证</th>
+  </tr>
+  <tr>
+    <td align="center">
+      自动识别页面类型<br>
+      替换为南京模板背景图<br>
+      封面 / 章节 / 内容 / 结尾<br>
+      智能区分
+    </td>
+    <td align="center">
+      全文替换为 TencentSans<br>
+      标题 W7 / 正文 W3<br>
+      代码等宽字体保留不替换
+    </td>
+    <td align="center">
+      检测禁用色自动替换<br>
+      南京 7 色安全调色板<br>
+      对比度自动修复
+    </td>
+    <td align="center">
+      背景完整性验证<br>
+      色板合规性检查<br>
+      字体一致性检测<br>
+      文字对比度验证
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🚀 快速开始
 
 ```bash
+# 1️⃣ 克隆仓库
+git clone https://github.com/zrzqbr/tencent-architect-nanjing-ppt-adapter.git
+cd tencent-architect-nanjing-ppt-adapter
+
+# 2️⃣ 安装依赖
 pip install -r requirements.txt
 
-# 迁移已有 PPT
-python scripts/apply_template.py --input your.pptx --output nanjing.pptx
+# 3️⃣ 运行适配
+python scripts/apply_template.py --input your.pptx --output branded.pptx
 
-# HTML / Markdown 转南京模板 PPT
-python scripts/apply_template.py --input article.html --output nanjing.pptx
-
-# 验证输出
-python scripts/verify_output.py --pptx nanjing.pptx --strict
+# 4️⃣ 验证输出
+python scripts/verify_output.py --pptx branded.pptx --strict
 ```
+
+<table>
+  <tr>
+    <td><strong>环境要求</strong></td>
+    <td>Python 3.9+ &nbsp;·&nbsp; pip</td>
+  </tr>
+  <tr>
+    <td><strong>核心依赖</strong></td>
+    <td><code>python-pptx</code> · <code>lxml</code> · <code>Pillow</code> · <code>beautifulsoup4</code></td>
+  </tr>
+</table>
 
 ---
 
-## 目录结构
+## 📋 两种使用模式
+
+<table>
+  <tr>
+    <th width="50%">⭐ 模式 A：常用 PPT 生成 Skill + 适配 Skill 搭配使用</th>
+    <th width="50%">🔄 模式 B：迁移已有 PPT</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <br>
+      <code>输入主题 + 大纲</code><br>
+      &nbsp;&nbsp;⬇️<br>
+      <code>常用 PPT 生成 Skill + 本适配 Skill 协同工作</code><br>
+      &nbsp;&nbsp;⬇️<br>
+      <code>输出 .pptx</code>
+      <br><br>
+    </td>
+    <td align="center">
+      <br>
+      <code>输入原始 .pptx</code><br>
+      &nbsp;&nbsp;⬇️<br>
+      <code>模板适配</code><br>
+      &nbsp;&nbsp;⬇️<br>
+      <code>输出适配后 .pptx</code>
+      <br><br>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><sub>内容创作与品牌风格适配各司其职，没有先后顺序限制</sub></td>
+    <td align="center"><sub>嘉宾/讲师已有 PPT，直接由本 Skill 完成适配</sub></td>
+  </tr>
+</table>
+
+---
+
+## 💬 提示词模板（直接复制使用）
+
+> 💡 **使用建议**：将你常用的 PPT 生成 Skill 与本适配 Skill 搭配使用，内容创作与品牌风格适配各司其职，没有先后顺序限制。
+
+<details>
+<summary><strong>📝 场景一：配合其他 Skill 适配专属腾讯云架构师南京城市沙龙 PPT 风格</strong></summary>
+
+<br>
+
+> 💡 适用场景：将你常用的 PPT 生成 Skill 与本适配 Skill 搭配使用
 
 ```text
-assets/
-├── templates/
-│   └── nanjing-architect-salon-template.pptx
-├── backgrounds/
-│   ├── bg-cover.jpeg
-│   ├── bg-hero-cover.jpeg
-│   ├── bg-section.jpeg
-│   ├── bg-content.jpeg
-│   └── bg-end.jpeg
-├── logos/                   # 默认不强制插入横版 Logo
-└── fonts/
-    ├── TencentSans-W3.ttf
-    └── TencentSans-W7.ttf
-scripts/
-├── apply_template.py         # 统一入口
-├── html_to_pptx.py           # HTML/Markdown 生成南京模板 PPT
-├── brand_palette.py          # 南京限定色板工具
-├── verify_output.py          # 输出验证
-└── extract_template_assets.py
+请帮我制作一份腾讯云架构师城市沙龙 PPT。
+
+主题：[在此填写你的主题，例如：云原生架构落地实践]
+大纲：
+1. [章节一标题]
+2. [章节二标题]
+3. [章节三标题]
+4. [章节四标题]
+
+要求：
+- 搭配我常用的 PPT 生成 Skill 与腾讯云架构师南京城市沙龙 PPT 模板适配 Skill 协同完成
+- 内容详实，结构清晰
+- 包含完整页面结构：封面页、目录页、章节扉页、结尾页
+- 统一南京品牌配色规范（南京限定 7 色板）
+```
+
+</details>
+
+<details>
+<summary><strong>📝 场景二：迁移已有 PPT 到南京品牌模板</strong></summary>
+
+<br>
+
+> 💡 适用场景：嘉宾/讲师已有 PPT，需要套用统一模板，直接由本 Skill 完成适配
+
+```text
+请帮我将附件中的 PPT 迁移到腾讯云架构师南京城市沙龙模板。
+
+要求：
+- 调用腾讯云架构师南京城市沙龙 PPT 模板适配 Skill 完成迁移
+- 保留原始 PPT 的所有内容、版式和图表，不要修改文案
+- 替换背景为南京品牌模板背景
+- 字体统一为 TencentSans
+- 检查配色合规性，替换禁用色为南京限定色板
+```
+
+</details>
+
+---
+
+## 🏷️ 触发场景
+
+以下关键词会触发本 Skill：
+
+<p>
+  <img src="https://img.shields.io/badge/腾讯云架构师南京城市沙龙模板-3272DC?style=flat-square" alt="">
+  <img src="https://img.shields.io/badge/南京沙龙%20PPT-3272DC?style=flat-square" alt="">
+  <img src="https://img.shields.io/badge/把%20PPT%20套到南京模板-01A4FF?style=flat-square" alt="">
+  <img src="https://img.shields.io/badge/嘉宾%20PPT%20换统一模板-01A4FF?style=flat-square" alt="">
+  <img src="https://img.shields.io/badge/南京沙龙模板适配-08194B?style=flat-square" alt="">
+  <img src="https://img.shields.io/badge/保留内容只替换背景%2F字体%2F配色-08194B?style=flat-square" alt="">
+</p>
+
+> 💡 **提示：** 可以直接把上面的提示词模板复制到 WorkBuddy 对话框中使用，填入你的具体内容即可一键完成 PPT 制作或迁移。
+
+---
+
+## ⚠️ 注意事项
+
+| | 说明 |
+|:---:|------|
+| 🔒 | 本 Skill **只做风格适配**，不会修改你的文案内容和页面布局 |
+| 📂 | 支持多种输入格式，包括 `.pptx`、`HTML`、`Markdown` 等 |
+| 📎 | 迁移模式需将原始 PPT 作为附件上传到对话中 |
+| ⚖️ | TencentSans 字体为腾讯品牌字体，请确认使用授权 |
+| 🚫 | 南京模板默认不强制插入旧横版 Logo |
+
+---
+
+## 📁 目录结构
+
+```
+tencent-architect-nanjing-ppt-adapter/
+│
+├── 📋 SKILL.md                         # 主文档（完整迁移经验 & 品牌规范）
+├── 📖 README.md                        # 本文件
+├── 📜 LICENSE                          # MIT 开源协议
+├── 📦 requirements.txt                 # Python 依赖清单
+│
+├── 🔧 scripts/                         # 核心脚本
+│   ├── apply_template.py               # 统一入口 · 模板适配引擎
+│   ├── html_to_pptx.py                 # HTML → PPTX 核心转换
+│   ├── verify_output.py                # 输出质量验证
+│   ├── brand_palette.py                # 南京限定色板校验 + 上游约束注入
+│   ├── extract_template_assets.py      # 模板资产提取工具
+│   └── test_v5.py                      # 自动化测试套件
+│
+├── 🎨 assets/                          # 品牌资产
+│   ├── backgrounds/                    # 南京品牌背景图（封面/章节/内容/结尾）
+│   ├── logos/                          # 默认不强制插入横版 Logo
+│   ├── fonts/                          # TencentSans W3 / W7
+│   └── templates/                      # 南京城市沙龙模板源文件
+│
+└── 📚 references/                      # 参考文档
+    ├── brand-rules.md                  # 南京品牌规范详细补充
+    └── changelog-v1-v5.md              # 版本演进 & 实战经验沉淀
 ```
 
 ---
 
-## 使用模式
+## 🤝 贡献
 
-### 1. 迁移已有 PPT
-
-```bash
-python scripts/apply_template.py --input guest.pptx --output guest_nanjing.pptx --mode full
-```
-
-会执行：背景替换、字体统一、南京色板合规、文字对比度修复、页眉安全区检测。
-
-### 2. HTML / Markdown 生成 PPT
-
-```bash
-python scripts/apply_template.py --input article.html --output article_nanjing.pptx --title "主题"
-```
-
-会根据 H1/H2、段落、列表、表格、代码块、图片、卡片、流程图等结构生成南京模板 PPT。
+欢迎提交 Issue 和 Pull Request！无论是 Bug 反馈、功能建议还是代码贡献，都非常感谢。
 
 ---
 
-## 给上游 PPT 生成器的配色提示词
+## 📬 反馈
 
-```bash
-python scripts/brand_palette.py --prompt
-```
-
-校验颜色：
-
-```bash
-python scripts/brand_palette.py --validate "#3272DC"
-python scripts/brand_palette.py --validate "#D80C01"
-```
+- **GitHub Issues：** [提交问题](https://github.com/zrzqbr/tencent-architect-nanjing-ppt-adapter/issues)
 
 ---
 
-## 设计原则
+<div align="center">
 
-- 不改文案，不删信息。
-- 不强制重排页面。
-- 只在品牌资产层做适配。
-- 颜色必须收敛到南京 7 色板。
-- 不再出现旧模板背景和旧红/暖色系统。
+<sub>
 
----
+**本 Skill 不创作 PPT，它让 PPT 形成专属腾讯云架构师南京城市沙龙的统一风格。**
 
-## License
+</sub>
 
-MIT License。字体、模板、品牌资产请按原权利归属和授权范围使用。
+</div>

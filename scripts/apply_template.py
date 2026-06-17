@@ -832,7 +832,397 @@ def replace_colors_in_slide(slide, max_delta: float = 30.0,
     return changes
 
 
-# ---------- 主题色覆写（v4 新增）----------
+# ---------- 架构级修复 v9：主题层字体/色板/背景 + 字体嵌入 ----------
+
+# === 南京品牌色槽完整映射（12 槽 → 品牌色）===
+# 覆写 theme1.xml 中 clrScheme 的全部 12 个色槽，而不是只替换禁用色。
+# 这是"模板模式"的核心——让所有引用 schemeClr 的元素自动获得正确品牌色。
+NANJING_CLR_SCHEME = {
+    "dk1":      "08194B",   # 深蓝（正文默认色 tx1 → dk1）
+    "lt1":      "FFFFFF",   # 白色（背景色 bg1 → lt1）
+    "dk2":      "44474F",   # 深灰辅助（二级深色）
+    "lt2":      "8B8C8C",   # 中灰辅助（二级浅色）
+    "accent1":  "3272DC",   # 南京主蓝
+    "accent2":  "08194B",   # 南京深蓝
+    "accent3":  "00C8D8",   # 青蓝强调
+    "accent4":  "01A4FF",   # 亮蓝强调
+    "accent5":  "44474F",   # 深灰辅助
+    "accent6":  "8B8C8C",   # 中灰辅助
+    "hlink":    "3272DC",   # 超链接 → 主蓝
+    "folHlink": "08194B",   # 已访问超链接 → 深蓝
+}
+
+
+def overwrite_theme_clrscheme(pres, dry_run: bool = False) -> list:
+    """【架构级修复】完整覆写 theme XML 中 clrScheme 的全部 12 个色槽。
+
+    与旧版 replace_theme_colors() 的区别：
+    - 旧版只替换禁用色（被动补丁）
+    - 新版主动覆写全部 12 个色槽为南京品牌色映射（模板模式）
+
+    这样任何引用 schemeClr val="accent1" 的形状都会自动显示 #3272DC。
+    """
+    from lxml import etree as ET
+    changes = []
+    ns = 'http://schemas.openxmlformats.org/drawingml/2006/main'
+    processed_theme_parts = set()
+
+    for master in pres.slide_masters:
+        try:
+            for rel in master.part.rels.values():
+                if 'theme' not in str(rel.reltype).lower():
+                    continue
+                theme_part = rel.target_part
+                part_id = id(theme_part)
+                if part_id in processed_theme_parts:
+                    continue
+                processed_theme_parts.add(part_id)
+
+                root = ET.fromstring(theme_part.blob)
+                ns_map = {'a': ns}
+                clrScheme = root.find('.//a:clrScheme', ns_map)
+                if clrScheme is None:
+                    continue
+
+                modified = False
+                for child in clrScheme:
+                    slot_local = ET.QName(child).localname
+                    if slot_local not in NANJING_CLR_SCHEME:
+                        continue
+
+                    target_hex = NANJING_CLR_SCHEME[slot_local]
+
+                    # 读取当前值
+                    old_hex = "000000"
+                    color_el = None
+                    for ce in child:
+                        if ET.QName(ce).localname == 'srgbClr':
+                            old_hex = ce.get('val', '000000')
+                            color_el = ce
+                            break
+                        elif ET.QName(ce).localname == 'sysClr':
+                            # 系统色引用（如 windowText）→ 替换为 srgbClr
+                            old_hex = ce.get('lastClr', '000000')
+                            child.remove(ce)
+                            color_el = None
+                            break
+
+                    if old_hex.upper() == target_hex.upper():
+                        continue  # 已经是目标色
+
+                    changes.append({
+                        "element": f"主题色槽[{slot_local}]",
+                        "from": f"#{old_hex.upper()}",
+                        "to": f"#{target_hex.upper()}",
+                        "delta_e": 0,
+                        "brand_name": f"南京品牌色覆写",
+                        "slide": 0,
+                    })
+
+                    if not dry_run:
+                        if color_el is not None:
+                            color_el.set('val', target_hex)
+                        else:
+                            new_el = ET.SubElement(child, qn('a:srgbClr'))
+                            new_el.set('val', target_hex)
+                        modified = True
+
+                if modified and not dry_run:
+                    new_xml = ET.tostring(root, xml_declaration=True,
+                                          encoding='UTF-8', standalone=True)
+                    theme_part._blob = new_xml
+
+        except Exception as e:
+            raise
+
+    return changes
+
+
+def overwrite_theme_fonts(pres, dry_run: bool = False) -> dict:
+    """【架构级修复】修改 theme XML 中的 majorFont 和 minorFont 定义。
+
+    将 majorFont（标题字体）改为 TencentSans W7，
+    将 minorFont（正文字体）改为 TencentSans W3。
+
+    这样所有使用"主题字体"的文本框自动继承正确字体，
+    不再需要逐 run 遍历 92 处写 typeface。
+    """
+    from lxml import etree as ET
+    ns = 'http://schemas.openxmlformats.org/drawingml/2006/main'
+    result = {"major_changed": False, "minor_changed": False, "themes_processed": 0}
+    processed = set()
+
+    for master in pres.slide_masters:
+        try:
+            for rel in master.part.rels.values():
+                if 'theme' not in str(rel.reltype).lower():
+                    continue
+                theme_part = rel.target_part
+                part_id = id(theme_part)
+                if part_id in processed:
+                    continue
+                processed.add(part_id)
+
+                root = ET.fromstring(theme_part.blob)
+                ns_map = {'a': ns}
+                modified = False
+
+                # majorFont → TencentSans W7
+                majorFont = root.find('.//a:fontScheme/a:majorFont', ns_map)
+                if majorFont is not None:
+                    for tag in ('a:latin', 'a:ea', 'a:cs'):
+                        el = majorFont.find(tag, ns_map)
+                        if el is not None:
+                            if el.get('typeface') != FONT_TITLE_EA:
+                                if not dry_run:
+                                    el.set('typeface', FONT_TITLE_EA)
+                                result["major_changed"] = True
+                                modified = True
+                        else:
+                            if not dry_run:
+                                new_el = ET.SubElement(majorFont, qn(tag))
+                                new_el.set('typeface', FONT_TITLE_EA)
+                            result["major_changed"] = True
+                            modified = True
+
+                # minorFont → TencentSans W3
+                minorFont = root.find('.//a:fontScheme/a:minorFont', ns_map)
+                if minorFont is not None:
+                    for tag in ('a:latin', 'a:ea', 'a:cs'):
+                        el = minorFont.find(tag, ns_map)
+                        if el is not None:
+                            if el.get('typeface') != FONT_BODY_EA:
+                                if not dry_run:
+                                    el.set('typeface', FONT_BODY_EA)
+                                result["minor_changed"] = True
+                                modified = True
+                        else:
+                            if not dry_run:
+                                new_el = ET.SubElement(minorFont, qn(tag))
+                                new_el.set('typeface', FONT_BODY_EA)
+                            result["minor_changed"] = True
+                            modified = True
+
+                if modified and not dry_run:
+                    new_xml = ET.tostring(root, xml_declaration=True,
+                                          encoding='UTF-8', standalone=True)
+                    theme_part._blob = new_xml
+                    result["themes_processed"] += 1
+
+        except Exception:
+            continue
+
+    return result
+
+
+def embed_fonts_to_pptx(pres, dry_run: bool = False) -> dict:
+    """【架构级修复】将 TencentSans TTF 字体文件嵌入到 PPTX 包中。
+
+    OOXML 字体嵌入流程：
+    1. 将 .ttf 文件作为 part 写入 ppt/fonts/ 目录（fntdata 格式）
+    2. 在 presentation.xml.rels 中添加 font relationship
+    3. 在 [Content_Types].xml 中注册 fntdata MIME 类型
+    4. 在 presentation.xml 中添加 <p:embeddedFontLst> 声明
+
+    这样即使目标机器未安装 TencentSans，PPT 也能正确渲染字体。
+    """
+    import hashlib
+    from lxml import etree as ET
+
+    result = {"fonts_embedded": 0, "fonts_skipped": 0, "details": []}
+
+    font_files = {
+        FONT_BODY_EA: {
+            "path": ASSETS / "fonts" / "TencentSans-W3.ttf",
+            "bold": False,
+            "italic": False,
+        },
+        FONT_TITLE_EA: {
+            "path": ASSETS / "fonts" / "TencentSans-W7.ttf",
+            "bold": True,
+            "italic": False,
+        },
+    }
+
+    if dry_run:
+        for name, info in font_files.items():
+            if info["path"].exists():
+                result["fonts_embedded"] += 1
+                result["details"].append(f"[DRY-RUN] 将嵌入: {name} ({info['path'].name})")
+            else:
+                result["fonts_skipped"] += 1
+                result["details"].append(f"[DRY-RUN] 文件不存在: {info['path']}")
+        return result
+
+    # 获取 presentation part
+    pres_part = pres.part
+
+    # 检查已有的嵌入字体关系，避免重复
+    existing_font_rels = set()
+    for rel in pres_part.rels.values():
+        if 'font' in str(rel.reltype).lower():
+            existing_font_rels.add(rel.target_ref)
+
+    for font_name, info in font_files.items():
+        ttf_path = info["path"]
+        if not ttf_path.exists():
+            result["fonts_skipped"] += 1
+            result["details"].append(f"字体文件不存在: {ttf_path}")
+            continue
+
+        try:
+            font_data = ttf_path.read_bytes()
+
+            # 生成唯一的 part 名称
+            font_hash = hashlib.md5(font_data).hexdigest()[:8]
+            part_name = f"/ppt/fonts/font_{font_hash}.fntdata"
+
+            # 检查是否已嵌入
+            if part_name in existing_font_rels:
+                result["fonts_skipped"] += 1
+                result["details"].append(f"已嵌入: {font_name}")
+                continue
+
+            # 创建字体 part 并添加关系
+            from pptx.opc.package import Part
+            from pptx.opc.packuri import PackURI
+
+            font_part = Part(
+                PackURI(part_name),
+                'application/x-fontdata',
+                pres_part.package,
+                font_data,
+            )
+
+            # 添加关系
+            pres_part.relate_to(font_part, 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/font')
+
+            # 在 presentation.xml 中添加嵌入字体声明
+            pres_xml = pres_part._element
+            ns_p = 'http://schemas.openxmlformats.org/presentationml/2006/main'
+
+            # 查找或创建 embeddedFontLst
+            embFontLst = pres_xml.find(qn('p:embeddedFontLst'))
+            if embFontLst is None:
+                # 插入到合适位置（在 sldMasterIdLst 之后）
+                sldMasterIdLst = pres_xml.find(qn('p:sldMasterIdLst'))
+                if sldMasterIdLst is not None:
+                    embFontLst = ET.Element(qn('p:embeddedFontLst'))
+                    sldMasterIdLst.addnext(embFontLst)
+                else:
+                    embFontLst = ET.SubElement(pres_xml, qn('p:embeddedFontLst'))
+
+            # 添加 embeddedFont 节点
+            embFont = ET.SubElement(embFontLst, qn('p:embeddedFont'))
+            font_elem = ET.SubElement(embFont, qn('p:font'))
+            font_elem.set('typeface', font_name)
+            font_elem.set('charset', '0')
+
+            # 根据 bold/italic 设置对应的嵌入类型
+            if info["bold"]:
+                embed_type = ET.SubElement(embFont, qn('p:bold'))
+            else:
+                embed_type = ET.SubElement(embFont, qn('p:regular'))
+
+            # 获取新添加的关系 ID
+            for rel in pres_part.rels.values():
+                if rel.target_part is font_part:
+                    embed_type.set(qn('r:id'), rel.rId)
+                    break
+
+            result["fonts_embedded"] += 1
+            result["details"].append(f"已嵌入: {font_name} → {part_name}")
+
+        except Exception as e:
+            result["fonts_skipped"] += 1
+            result["details"].append(f"嵌入失败 {font_name}: {e}")
+
+    return result
+
+
+def set_slidemaster_background(pres, bg_image_path: str, dry_run: bool = False) -> bool:
+    """【架构级修复】在 slideMaster 层设置背景。
+
+    将 slideMaster 的 <p:bg> 中的背景改为图片填充，
+    使所有继承该 master 的页面自动获得品牌背景。
+
+    注意：对于不同页面类型（cover/section/content/end），
+    仍需在 slide 层覆盖。但 content 类型（占多数）可以继承 master 背景，
+    减少每页重复插入全屏图片的体积开销。
+
+    当前实现：将 slideMaster 的 solidFill 改为 blipFill（图片填充），
+    作为 content 页的默认背景。各页面仍保留 per-slide 覆盖能力。
+    """
+    if dry_run:
+        return True
+
+    from lxml import etree as ET
+
+    try:
+        for master in pres.slide_masters:
+            cSld = master._element.find(qn('p:cSld'))
+            if cSld is None:
+                continue
+
+            # 找到或创建 <p:bg>
+            bg = cSld.find(qn('p:bg'))
+            if bg is not None:
+                # 清除旧的背景定义
+                cSld.remove(bg)
+
+            # 创建新的 <p:bg> 用 blipFill
+            bg = ET.SubElement(cSld, qn('p:bg'))
+            # 插入到 spTree 之前
+            spTree = cSld.find(qn('p:spTree'))
+            if spTree is not None:
+                cSld.remove(bg)
+                spTree.addprevious(bg)
+
+            bgPr = ET.SubElement(bg, qn('p:bgPr'))
+
+            # 添加图片关系
+            img_part_name = f"/ppt/media/bg_master_content.jpeg"
+
+            # 读取图片数据
+            img_data = Path(bg_image_path).read_bytes()
+
+            from pptx.opc.package import Part
+            from pptx.opc.packuri import PackURI
+
+            img_part = Part(
+                PackURI(img_part_name),
+                'image/jpeg',
+                pres.part.package,
+                img_data,
+            )
+
+            rId = master.part.relate_to(img_part,
+                'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image')
+
+            # 构建 blipFill
+            blipFill = ET.SubElement(bgPr, qn('a:blipFill'))
+            blipFill.set('dpi', '0')
+            blipFill.set('rotWithShape', '1')
+
+            blip = ET.SubElement(blipFill, qn('a:blip'))
+            blip.set(qn('r:embed'), rId)
+
+            stretch = ET.SubElement(blipFill, qn('a:stretch'))
+            fillRect = ET.SubElement(stretch, qn('a:fillRect'))
+
+            # 效果列表（空）
+            effectLst = ET.SubElement(bgPr, qn('a:effectLst'))
+
+            return True
+
+    except Exception as e:
+        print(f"[WARN] slideMaster 背景设置失败: {e}")
+        return False
+
+    return False
+
+
+# ---------- 主题色覆写（v4 原版，保留兼容）----------
 
 def replace_theme_colors(pres, dry_run: bool = False) -> list:
     """覆写 PPT 主题色定义中的禁用色。
@@ -1784,28 +2174,84 @@ def adapt(input_pptx: str, output_pptx: str,
         "logo_skipped": 0,             # [P0-2] Logo/页眉去重跳过数量
         "contrast_fixes": 0,           # [P0-A] 文字对比度修复数量
         "overflow_warnings": [],       # [P1-B] 元素溢出检测
+        "theme_fonts_result": {},      # [v9] 主题字体覆写结果
+        "font_embed_result": {},       # [v9] 字体嵌入结果
+        "master_bg_set": False,        # [v9] slideMaster 背景设置结果
         "warnings": [],
     }
 
-    # [P2-12] 字体安装检测
-    if mode in ("full", "light"):
-        if not _check_tencent_sans_installed():
-            report["warnings"].append(
-                "⚠️ TencentSans 字体未安装到系统！字体替换已写入 XML，"
-                "但 PowerPoint 打开时可能显示替代字体。"
-                f"请手动安装 {ASSETS / 'fonts'} 目录下的 .otf/.ttf 文件后重新打开 PPT。"
-            )
+    # ============================================================
+    # v9 架构级操作（执行顺序铁律：主题层 → 母版层 → 页面层 → 元素层）
+    # ============================================================
 
-    # 0) 主题色覆写（v4 新增：必须在遍历 slide 之前，覆写全局主题定义）
+    # 第一层：主题层 —— 覆写 clrScheme 全部 12 色槽
     if color_compliance and mode in ("full", "light"):
         try:
-            theme_changes = replace_theme_colors(pres, dry_run=dry_run)
+            theme_changes = overwrite_theme_clrscheme(pres, dry_run=dry_run)
             report["theme_color_changes"] = theme_changes
             report["theme_color_changes_count"] = len(theme_changes)
             report["color_changes"].extend(theme_changes)
             report["color_changes_count"] += len(theme_changes)
         except Exception as e:
-            report["warnings"].append(f"主题色覆写失败：{e}")
+            report["warnings"].append(f"主题色槽完整覆写失败（回退旧版）：{e}")
+            # 回退到旧版只替换禁用色
+            try:
+                theme_changes = replace_theme_colors(pres, dry_run=dry_run)
+                report["theme_color_changes"] = theme_changes
+                report["theme_color_changes_count"] = len(theme_changes)
+                report["color_changes"].extend(theme_changes)
+                report["color_changes_count"] += len(theme_changes)
+            except Exception as e2:
+                report["warnings"].append(f"主题色覆写（旧版回退）也失败：{e2}")
+
+    # 第一层：主题层 —— 覆写 majorFont/minorFont
+    if mode in ("full", "light"):
+        try:
+            fonts_result = overwrite_theme_fonts(pres, dry_run=dry_run)
+            report["theme_fonts_result"] = fonts_result
+            if fonts_result.get("major_changed") or fonts_result.get("minor_changed"):
+                report["warnings"].append(
+                    f"✅ 主题字体已覆写: majorFont→{FONT_TITLE_EA}, minorFont→{FONT_BODY_EA}"
+                )
+        except Exception as e:
+            report["warnings"].append(f"主题字体覆写失败：{e}")
+
+    # 第一层（补充）：字体嵌入 —— 将 TTF 写入 pptx 包
+    if mode in ("full", "light"):
+        try:
+            embed_result = embed_fonts_to_pptx(pres, dry_run=dry_run)
+            report["font_embed_result"] = embed_result
+            if embed_result.get("fonts_embedded", 0) > 0:
+                report["warnings"].append(
+                    f"✅ 已嵌入 {embed_result['fonts_embedded']} 个字体到 PPTX 包"
+                )
+        except Exception as e:
+            report["warnings"].append(f"字体嵌入失败：{e}")
+
+    # 第二层：母版层 —— 设置 slideMaster 默认背景（content 背景）
+    if mode == "full":
+        try:
+            bg_set = set_slidemaster_background(
+                pres, assets["bg_content"], dry_run=dry_run
+            )
+            report["master_bg_set"] = bg_set
+            if bg_set:
+                report["warnings"].append("✅ slideMaster 背景已设为南京 content 背景")
+        except Exception as e:
+            report["warnings"].append(f"slideMaster 背景设置失败：{e}")
+
+    # 重建主题色缓存（覆写后缓存已过期）
+    _build_theme_color_cache(pres)
+
+    # [P2-12] 字体安装检测（仅在未嵌入时警告）
+    if mode in ("full", "light"):
+        fonts_embedded = report.get("font_embed_result", {}).get("fonts_embedded", 0)
+        if fonts_embedded == 0 and not _check_tencent_sans_installed():
+            report["warnings"].append(
+                "⚠️ TencentSans 字体未安装且嵌入失败！"
+                "PowerPoint 打开时可能显示替代字体。"
+                f"请手动安装 {ASSETS / 'fonts'} 目录下的 .ttf 文件后重新打开 PPT。"
+            )
 
     for idx, slide in enumerate(pres.slides):
         ptype = classify_page(slide, idx, total)
@@ -1904,7 +2350,19 @@ def print_report(report: dict):
     print(f"色块合规：{'开启（ΔE < ' + str(report['color_delta']) + '；禁用色强制替换）' if report.get('color_compliance') else '关闭'}")
     print(f"色差算法：CIEDE2000（P1-4 升级）")
     print(f"总页数：{report['total_slides']}")
-    print(f"字体替换次数（实际变更）：{report['font_changes']}")
+
+    # v9 架构级操作报告
+    tf = report.get('theme_fonts_result', {})
+    if tf:
+        major = "✅" if tf.get('major_changed') else "—"
+        minor = "✅" if tf.get('minor_changed') else "—"
+        print(f"主题字体覆写：majorFont={major} minorFont={minor} (处理 {tf.get('themes_processed', 0)} 个主题)")
+    fe = report.get('font_embed_result', {})
+    if fe:
+        print(f"字体嵌入：{fe.get('fonts_embedded', 0)} 个成功，{fe.get('fonts_skipped', 0)} 个跳过")
+    print(f"slideMaster 背景：{'✅ 已设置' if report.get('master_bg_set') else '— 未设置'}")
+
+    print(f"字体替换次数（run-level 兜底）：{report['font_changes']}")
     print(f"主题色覆写次数：{report.get('theme_color_changes_count', 0)}")
     print(f"色块颜色替换次数（含主题）：{report['color_changes_count']}")
     print(f"全屏遮罩清除数量：{report.get('overlay_removed', 0)}")

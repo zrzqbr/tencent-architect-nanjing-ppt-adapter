@@ -1,7 +1,7 @@
 ---
 name: 腾讯云架构师南京城市沙龙PPT模板适配Skill
-version: "4.1-nanjing-adaptive"
-description: 腾讯云架构师南京城市沙龙 PPT 模板适配 Skill。用于将已有 PPT、HTML slide deck 或 Markdown 迁移为南京城市沙龙模板风格。执行时必须先分析用户给到的源文件和模板语义，不得固化套用某一份 PPT 的判断；根据页面类型、组件复杂度和内容密度自适应选择背景、字体大小、渲染模式与验证策略。南京限定色板：#3272DC、#08194B、#FFFFFF、#00C8D8、#01A4FF、#44474F、#8B8C8C。
+version: "5.0-nanjing-architecture"
+description: 腾讯云架构师南京城市沙龙 PPT 模板适配 Skill。用于将已有 PPT、HTML slide deck 或 Markdown 迁移为南京城市沙龙模板风格。v5.0 架构级重构：采用"模板模式"替代"补丁模式"，在主题层/母版层统一设置字体、色板、背景，而不是逐元素遍历修改。南京限定色板：#3272DC、#08194B、#FFFFFF、#00C8D8、#01A4FF、#44474F、#8B8C8C。
 agent_created: true
 ---
 
@@ -28,6 +28,63 @@ agent_created: true
 ---
 
 ## 二、执行铁律
+
+### 2.0 执行顺序铁律（最高优先级）
+
+适配操作必须严格按以下层次从上到下执行，影响范围从大到小：
+
+```
+第一层：主题层（Theme）
+  → 覆写 theme1.xml 的 clrScheme 全部 12 色槽
+  → 覆写 theme1.xml 的 majorFont / minorFont
+  → 将 TTF 字体嵌入 ppt/fonts/ 并注册 Content_Types
+
+第二层：母版层（SlideMaster）
+  → 设置 slideMaster 的 bgPr 为品牌背景图片
+  → 设置 slideMaster 的默认文字颜色
+
+第三层：页面层（Slide）
+  → 按页面类型（cover/section/content/end）覆盖背景
+  → 清除全屏遮罩、修复对比度
+
+第四层：元素层（Shape/Run）
+  → 逐 run 字体兜底（处理未继承主题字体的显式 typeface）
+  → 逐形状色块合规替换（处理未引用 schemeClr 的硬编码 srgbClr）
+```
+
+**铁律：上层没做完，不要跳到下层。** 先做主题层，再做母版层，最后才做元素层兜底。
+上层做对了，下层的工作量会大幅减少（理想情况下元素层只需处理异常值）。
+
+### 2.1 字体嵌入铁律
+
+**只写 typeface 名称不等于字体可用。** 必须同时完成：
+
+1. 修改 `theme1.xml` 的 `majorFont` / `minorFont` → `TencentSans W7` / `TencentSans W3`
+2. 将 `assets/fonts/TencentSans-W7.ttf` 和 `TencentSans-W3.ttf` 写入 `ppt/fonts/` 目录
+3. 在 `presentation.xml` 中添加 `<p:embeddedFontLst>` 声明
+4. 在 `presentation.xml.rels` 中添加 font relationship
+5. 确保 `[Content_Types].xml` 包含 `application/x-fontdata` 类型
+
+**缺少任何一步，目标机器未安装字体时 PPT 将显示 fallback 字体（如宋体、Arial）。**
+
+### 2.2 颜色还原要求
+
+适配后颜色不能"一刀切"：
+
+- 不得将所有文字统一染成同一个深蓝色，必须保留原始的颜色层次（标题、正文、注释、强调）
+- 颜色替换后，按语义重新分配层次：标题用 `#3272DC`，正文用 `#08194B`，辅助用 `#44474F`，弱化用 `#8B8C8C`
+- 深色背景上的文字保持白色 `#FFFFFF`，不要反转
+
+### 2.3 视觉审查强制
+
+生成 PPT 后，必须完成视觉审查才能交付：
+
+1. 将每页转为图片（使用 LibreOffice 或截图工具）
+2. 逐页检查：背景是否正确、字体是否显示为品牌字体而非 fallback、颜色层次是否清晰、图表/表格是否可见
+3. 特别关注：封面页、含图表的页面、结尾页
+4. **"脚本跑通 ≠ 交付合格"**——verify_output.py 只检查技术指标，不检查视觉效果
+
+### 2.4 通用规则
 
 1. **先分析输入，再动手转换**：每次读取用户给到的 PPT/HTML/Markdown，判断页面类型、组件种类、内容密度、文字长度、是否已有封面/结尾/目录。
 2. **不得固化某一份案例**：不要把某个客户 PPT 的页数、组件、标题、背景顺序写死到规则中。
@@ -224,3 +281,65 @@ python scripts/verify_output.py --pptx output.pptx --strict
 ---
 
 **记住：每次都根据用户给到的文件重新分析，不固化页面数量、组件结构、标题位置或字体大小。**
+
+---
+
+## 九、跨 Skill 配合契约
+
+本 Skill 是**品牌适配器**，通常与上游**内容生成 Skill**（如 pptx 生成器、HTML slide deck 生成器）配合使用。
+
+### 9.1 对上游 Skill 的约束要求
+
+上游 Skill 生成的 PPT/HTML 必须满足以下条件，才能被本适配器正确处理：
+
+| 约束条件 | 说明 | 违反时的失败模式 |
+|---|---|---|
+| 不要设 slide 背景色 | 保持默认/透明，让适配器设置品牌背景 | 背景叠加、遮盖品牌背景 |
+| 不要硬编码字体名 | 使用主题字体（+mj-lt/+mn-lt）或留空让适配器统一处理 | 字体替换遗漏 |
+| 图表使用 python-pptx 原生 ChartData | 不要用纯图片假图表 | 图表不可编辑、颜色无法适配 |
+| 不要嵌入其他字体文件 | 会与适配器嵌入的字体冲突 | Content_Types 冲突 |
+| 文字颜色使用 schemeClr 引用 | 引用 dk1/accent1 等，不要硬编码 srgbClr | 主题色覆写不生效 |
+
+### 9.2 本适配器对下游的承诺
+
+| 承诺 | 说明 |
+|---|---|
+| 不改写内容文字 | 只锁品牌视觉层，不删改用户撰写的文字、标题、数据 |
+| 不改变页面顺序 | 保留原始 slide 顺序 |
+| 不删除图表/表格 | 只替换图表系列配色，不改变数据 |
+| 嵌入品牌字体 | 输出的 PPTX 包含 TencentSans TTF，目标机器无需安装 |
+| 输出适配报告 | 列出每页类型、颜色替换、字体替换、溢出检测明细 |
+
+### 9.3 失败模式速查
+
+| 现象 | 根因 | 修复 |
+|---|---|---|
+| 字体显示为宋体/Arial | 字体未嵌入或 theme 字体未覆写 | 确保 embed_fonts_to_pptx + overwrite_theme_fonts 执行成功 |
+| 所有文字同色无层次 | fix_text_contrast 过于激进 | 检查形状自身填充亮度，避免误判 |
+| 背景叠加残影 | 旧背景未清除 | remove_fullscreen_overlays 需在插入新背景前执行 |
+| 图表不显示 | 图表依赖内嵌 Excel，链路脆弱 | 使用 python-pptx 原生 CategoryChartData 生成 |
+| 颜色覆写不生效 | 元素使用硬编码 srgbClr 而非 schemeClr | 需要元素层兜底扫描（replace_colors_in_slide） |
+
+---
+
+## 十、架构说明与已知限制
+
+### 10.1 "模板模式" vs "补丁模式"
+
+**v5.0 采用"模板模式"**：在主题层和母版层做全局设置，让所有元素自动继承。
+旧版是"补丁模式"：逐页、逐形状、逐 run 遍历修改，遗漏率高、性能差。
+
+| 维度 | 模板模式（v5.0） | 补丁模式（旧版） |
+|---|---|---|
+| 字体 | 改 theme 的 majorFont/minorFont | 遍历所有 run 写 typeface |
+| 颜色 | 覆写 clrScheme 12 色槽 | 只替换禁用色 |
+| 背景 | slideMaster 的 bgPr + per-slide 覆盖 | 每页插入全屏图片 |
+| 字体嵌入 | 写入 ppt/fonts/ + 注册 rels | 无（依赖本机安装） |
+| 遗漏率 | 低（自动继承） | 高（手动遍历） |
+
+### 10.2 已知限制
+
+1. **slideMaster 背景继承**：设置 slideMaster bgPr 后，如果 slide 自身没有 `<p:bg>` 覆盖，会自动继承 master 背景。但部分 slide 可能已有 `<p:bg>` 定义，此时 master 背景不生效——需要在 slide 层显式覆盖。
+2. **字体嵌入体积**：TencentSans TTF 每个约 8.5MB，两个字体共增加约 17MB。对于需要邮件发送的场景可能偏大。
+3. **图表配色**：图表系列颜色如果引用 schemeClr，覆写 clrScheme 后会自动生效；如果使用硬编码 srgbClr，仍需元素层扫描替换。
+4. **多 theme 支持**：部分 PPT 可能有多个 theme（theme1.xml/theme2.xml/theme3.xml），当前只处理 slideMaster 关联的主 theme。

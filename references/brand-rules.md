@@ -128,3 +128,65 @@ y = 0.35" – 1.15"
 4. 字体是否统一为 TencentSans W7/W3。
 5. 浅蓝背景与白卡上的文字是否足够清晰。
 6. 内容是否侵入顶部页眉安全区。
+
+---
+
+## 八、架构级规范（v5.0+）
+
+### 8.1 执行层次
+
+适配操作必须严格按以下层次从上到下执行，影响范围从大到小：
+
+```
+第一层：主题层（Theme）
+  → 覆写 theme1.xml 的 clrScheme 全部 12 色槽
+  → 覆写 theme1.xml 的 majorFont / minorFont
+  → 将 TTF 字体嵌入 ppt/fonts/ 并注册 Content_Types
+
+第二层：母版层（SlideMaster）
+  → 设置 slideMaster 的 bgPr 为品牌背景图片
+  → 设置 slideMaster 的默认文字颜色
+
+第三层：页面层（Slide）
+  → 按页面类型（cover/section/content/end）覆盖背景
+  → 清除全屏遮罩、修复对比度
+
+第四层：元素层（Shape/Run）
+  → 逐 run 字体兜底（处理未继承主题字体的显式 typeface）
+  → 逐形状色块合规替换（处理未引用 schemeClr 的硬编码 srgbClr）
+```
+
+### 8.2 主题色槽映射（12 槽 → 南京品牌色）
+
+| 色槽 | 品牌色 | 语义 |
+|---|---|---|
+| dk1 (tx1) | `#08194B` | 正文默认色 |
+| lt1 (bg1) | `#FFFFFF` | 背景色 |
+| dk2 | `#44474F` | 二级深色 |
+| lt2 | `#8B8C8C` | 二级浅色 |
+| accent1 | `#3272DC` | 南京主蓝 |
+| accent2 | `#08194B` | 南京深蓝 |
+| accent3 | `#00C8D8` | 青蓝强调 |
+| accent4 | `#01A4FF` | 亮蓝强调 |
+| accent5 | `#44474F` | 深灰辅助 |
+| accent6 | `#8B8C8C` | 中灰辅助 |
+| hlink | `#3272DC` | 超链接 |
+| folHlink | `#08194B` | 已访问超链接 |
+
+### 8.3 字体嵌入规范
+
+**只写 typeface 名称不等于字体可用。** 必须同时完成：
+
+1. 修改 `theme1.xml` 的 `majorFont` / `minorFont` → `TencentSans W7` / `TencentSans W3`
+2. 将 `assets/fonts/TencentSans-W7.ttf` 和 `TencentSans-W3.ttf` 写入 `ppt/fonts/` 目录
+3. 在 `presentation.xml` 中添加 `<p:embeddedFontLst>` 声明
+4. 在 `presentation.xml.rels` 中添加 font relationship
+5. 确保 `[Content_Types].xml` 包含 `application/x-fontdata` 类型
+
+### 8.4 颜色还原要求
+
+适配后颜色不能"一刀切"：
+
+- 不得将所有文字统一染成同一个深蓝色，必须保留原始的颜色层次
+- 颜色替换后，按语义重新分配层次：标题用 `#3272DC`，正文用 `#08194B`，辅助用 `#44474F`，弱化用 `#8B8C8C`
+- 深色背景上的文字保持白色 `#FFFFFF`，不要反转

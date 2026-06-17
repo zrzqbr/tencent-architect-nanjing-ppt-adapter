@@ -203,8 +203,114 @@ def count_html_slides(html_path):
         return None
 
 
+def check_theme_fonts(prs, result):
+    """[v9] 检查 theme 中 majorFont/minorFont 是否为 TencentSans"""
+    try:
+        from lxml import etree as ET
+        ns = 'http://schemas.openxmlformats.org/drawingml/2006/main'
+        ns_map = {'a': ns}
+
+        for master in prs.slide_masters:
+            for rel in master.part.rels.values():
+                if 'theme' not in str(rel.reltype).lower():
+                    continue
+                theme_part = rel.target_part
+                root = ET.fromstring(theme_part.blob)
+
+                major = root.find('.//a:fontScheme/a:majorFont/a:latin', ns_map)
+                minor = root.find('.//a:fontScheme/a:minorFont/a:latin', ns_map)
+
+                if major is not None:
+                    tf = major.get('typeface', '')
+                    if 'TencentSans' in tf:
+                        result.ok(0, f"Theme majorFont: {tf}")
+                    else:
+                        result.error(0, f"Theme majorFont not TencentSans: '{tf}'")
+                else:
+                    result.error(0, "Theme majorFont not found")
+
+                if minor is not None:
+                    tf = minor.get('typeface', '')
+                    if 'TencentSans' in tf:
+                        result.ok(0, f"Theme minorFont: {tf}")
+                    else:
+                        result.error(0, f"Theme minorFont not TencentSans: '{tf}'")
+                else:
+                    result.error(0, "Theme minorFont not found")
+
+                return  # 只检查第一个 theme
+    except Exception as e:
+        result.warn(0, f"Theme font check failed: {e}")
+
+
+def check_theme_colors(prs, result):
+    """[v9] 检查 theme clrScheme 是否为南京品牌色"""
+    EXPECTED = {
+        "dk1": "08194B", "lt1": "FFFFFF",
+        "dk2": "44474F", "lt2": "8B8C8C",
+        "accent1": "3272DC", "accent2": "08194B",
+        "accent3": "00C8D8", "accent4": "01A4FF",
+        "accent5": "44474F", "accent6": "8B8C8C",
+        "hlink": "3272DC", "folHlink": "08194B",
+    }
+    try:
+        from lxml import etree as ET
+        ns = 'http://schemas.openxmlformats.org/drawingml/2006/main'
+        ns_map = {'a': ns}
+
+        for master in prs.slide_masters:
+            for rel in master.part.rels.values():
+                if 'theme' not in str(rel.reltype).lower():
+                    continue
+                theme_part = rel.target_part
+                root = ET.fromstring(theme_part.blob)
+                clr = root.find('.//a:clrScheme', ns_map)
+                if clr is None:
+                    result.error(0, "No clrScheme found in theme")
+                    return
+
+                mismatches = []
+                for child in clr:
+                    slot = ET.QName(child).localname
+                    if slot not in EXPECTED:
+                        continue
+                    for ce in child:
+                        if ET.QName(ce).localname == 'srgbClr':
+                            val = ce.get('val', '').upper()
+                            expected = EXPECTED[slot].upper()
+                            if val != expected:
+                                mismatches.append(f"{slot}: {val} != {expected}")
+
+                if mismatches:
+                    result.error(0, f"Theme clrScheme mismatches: {'; '.join(mismatches)}")
+                else:
+                    result.ok(0, f"Theme clrScheme: all 12 slots match brand colors")
+
+                return
+    except Exception as e:
+        result.warn(0, f"Theme color check failed: {e}")
+
+
+def check_font_embedding(prs, result):
+    """[v9] 检查是否嵌入了 TencentSans 字体文件"""
+    try:
+        font_rels = []
+        for rel in prs.part.rels.values():
+            if 'font' in str(rel.reltype).lower():
+                font_rels.append(rel.target_ref)
+
+        if len(font_rels) >= 2:
+            result.ok(0, f"Font embedding: {len(font_rels)} fonts embedded")
+        elif len(font_rels) == 1:
+            result.warn(0, f"Font embedding: only 1 font embedded (expected 2)")
+        else:
+            result.warn(0, "Font embedding: no fonts embedded (TencentSans may not display)")
+    except Exception as e:
+        result.warn(0, f"Font embedding check failed: {e}")
+
+
 def main():
-    parser = argparse.ArgumentParser(description='Verify HTML->PPT output quality')
+    parser = argparse.ArgumentParser(description='Verify HTML->PPT output quality (v9)')
     parser.add_argument('--pptx', required=True, help='Path to generated .pptx file')
     parser.add_argument('--html', help='Path to source .html file (optional, for page count comparison)')
     parser.add_argument('--strict', action='store_true', help='Enable strict mode (warnings become errors)')
@@ -226,7 +332,14 @@ def main():
     print(f"  Slide size: {slide_width_inch:.1f}\" x {slide_height_inch:.1f}\"")
     print(f"  Total slides: {len(prs.slides)}")
 
+    # [v9] 主题级检查（最重要，放在最前面）
+    print("\n--- Theme-level checks ---")
+    check_theme_fonts(prs, result)
+    check_theme_colors(prs, result)
+    check_font_embedding(prs, result)
+
     # 逐页检查
+    print("\n--- Slide-level checks ---")
     for i, slide in enumerate(prs.slides, 1):
         check_shapes_count(slide, i, result)
         check_font_sizes(slide, i, result, strict=args.strict)

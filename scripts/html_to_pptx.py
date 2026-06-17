@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-html_to_pptx.py — HTML 内容转腾讯云架构师长沙同盟模板 PPT (v2)
+html_to_pptx.py — HTML 内容转腾讯云架构师南京城市沙龙模板 PPT (v2)
 
 功能：
   解析 HTML 文件结构（标题/段落/列表/表格/代码块/图片/卡片/双栏/流程图/
   概率图/信息卡/策略对比/GPT大字/自定义flex布局），
-  直接生成符合腾讯云架构师长沙同盟模板规范的 PPT。
+  直接生成符合腾讯云架构师南京城市沙龙模板规范的 PPT。
   字体/配色/背景/Logo 均直接合规，无需二次适配。
 
 字体大小标准（锁死规范，基于 20 英寸宽幅面 v3）：
@@ -18,14 +18,14 @@ html_to_pptx.py — HTML 内容转腾讯云架构师长沙同盟模板 PPT (v2)
   - 正文/卡片正文: 20pt TencentSans W3
   - 列表项: 20pt TencentSans W3
   - 流程图步骤: 22pt TencentSans W7
-  - 流程图箭头: 28pt 品牌红
+  - 流程图箭头: 28pt 南京主蓝
   - 高亮框: 20pt TencentSans W3
   - 策略对比 emoji: 42pt / label: 28pt W7 / desc: 20pt W3
   - 标签/脚注: 14-16pt TencentSans W7
   - 代码块: 14-16pt JetBrains Mono
 
 支持的 HTML 元素映射：
-  - H1 → 章节扇页（bg-cover 背景）
+  - H1 → 章节扇页（南京章节背景）
   - H2 → 内容页标题
   - H3/H4 → 内容页副标题
   - p → 正文段落
@@ -87,29 +87,34 @@ SKILL_DIR = SCRIPT_DIR.parent
 ASSETS = SKILL_DIR / "assets"
 
 BG_COVER = ASSETS / "backgrounds" / "bg-cover.jpeg"
+BG_SECTION = ASSETS / "backgrounds" / "bg-section.jpeg"
 BG_CONTENT = ASSETS / "backgrounds" / "bg-content.jpeg"
-LOGO_MAIN = ASSETS / "logos" / "logo-main.png"
+BG_END = ASSETS / "backgrounds" / "bg-end.jpeg"
+LOGO_MAIN = ASSETS / "logos" / "logo-main.png"  # 南京模板默认不强制插入 Logo，保留变量兼容旧流程
 
 # ---------- 品牌规范常量 ----------
 # 页面尺寸（模板实测）
-SLIDE_WIDTH_EMU = 18305463   # ~20.02 inch
-SLIDE_HEIGHT_EMU = 10296525  # ~11.26 inch
+SLIDE_WIDTH_EMU = 18288000   # 20.00 inch
+SLIDE_HEIGHT_EMU = 10287000  # 11.25 inch
 
 # 字体
 FONT_TITLE = "TencentSans W7"
 FONT_BODY = "TencentSans W3"
 FONT_CODE = "JetBrains Mono"
 
-# 配色
-COLOR_BRAND_RED = RGBColor(0xD8, 0x0C, 0x01)
-COLOR_BLACK = RGBColor(0x00, 0x00, 0x00)
-COLOR_DARK_TEXT = RGBColor(0x22, 0x22, 0x22)
-COLOR_MID_GRAY = RGBColor(0x66, 0x66, 0x66)
-COLOR_LIGHT_GRAY = RGBColor(0x88, 0x88, 0x88)
-COLOR_WHITE = RGBColor(0xFF, 0xFF, 0xFF)
-COLOR_CREAM = RGBColor(0xFA, 0xF6, 0xEE)
-COLOR_WARM_APRICOT = RGBColor(0xD4, 0xA5, 0x74)
-COLOR_LINE_GRAY = RGBColor(0xE7, 0xE6, 0xE6)
+# 南京限定色板（只使用以下 7 色）
+COLOR_BRAND_RED = RGBColor(0x32, 0x72, 0xDC)      # 兼容旧变量名：南京主蓝 #3272DC
+COLOR_PRIMARY_BLUE = COLOR_BRAND_RED
+COLOR_BLACK = RGBColor(0x08, 0x19, 0x4B)          # 南京深蓝 #08194B
+COLOR_DARK_TEXT = COLOR_BLACK
+COLOR_MID_GRAY = RGBColor(0x44, 0x47, 0x4F)       # #44474F
+COLOR_LIGHT_GRAY = RGBColor(0x8B, 0x8C, 0x8C)     # #8B8C8C
+COLOR_WHITE = RGBColor(0xFF, 0xFF, 0xFF)          # #FFFFFF
+COLOR_CREAM = COLOR_WHITE                         # 卡片底统一纯白，避免旧米白残留
+COLOR_WARM_APRICOT = RGBColor(0x00, 0xC8, 0xD8)   # 兼容旧变量名：青蓝强调 #00C8D8
+COLOR_CYAN = COLOR_WARM_APRICOT
+COLOR_BRIGHT_BLUE = RGBColor(0x01, 0xA4, 0xFF)    # #01A4FF
+COLOR_LINE_GRAY = COLOR_LIGHT_GRAY
 
 # Logo 位置
 LOGO_COVER_X = Inches(0.65)
@@ -942,11 +947,11 @@ class PptxGenerator:
             shape.fill.solid()
             card_style = card.get('style', 'default')
             if card_style == 'accent':
-                shape.fill.fore_color.rgb = RGBColor(0xFE, 0xF5, 0xEB)
+                shape.fill.fore_color.rgb = COLOR_WHITE
                 shape.line.color.rgb = COLOR_BRAND_RED
             elif card_style == 'blue':
-                shape.fill.fore_color.rgb = RGBColor(0xEB, 0xF5, 0xFF)
-                shape.line.color.rgb = RGBColor(0x4A, 0x90, 0xD9)
+                shape.fill.fore_color.rgb = COLOR_WHITE
+                shape.line.color.rgb = COLOR_PRIMARY_BLUE
             else:
                 shape.fill.fore_color.rgb = COLOR_CREAM
                 shape.line.color.rgb = COLOR_LINE_GRAY
@@ -983,7 +988,7 @@ class PptxGenerator:
                 if card_style == 'accent':
                     run.font.color.rgb = COLOR_BRAND_RED
                 elif card_style == 'blue':
-                    run.font.color.rgb = RGBColor(0x4A, 0x90, 0xD9)
+                    run.font.color.rgb = COLOR_PRIMARY_BLUE
                 else:
                     run.font.color.rgb = COLOR_DARK_TEXT
                 self._set_font_east_asian(run, FONT_TITLE)
@@ -1008,7 +1013,7 @@ class PptxGenerator:
                     run.font.color.rgb = COLOR_DARK_TEXT
                     self._set_font_east_asian(run, FONT_BODY)
 
-            # 底部标签 — 16pt W7 品牌红
+            # 底部标签 — 16pt W7 南京主蓝
             if card.get('tag'):
                 p = tf.add_paragraph()
                 p.space_before = Pt(14)
@@ -1048,11 +1053,11 @@ class PptxGenerator:
             if col.get('cards'):
                 first_card_style = col['cards'][0].get('style', 'default')
                 if first_card_style == 'accent':
-                    col_fill_color = RGBColor(0xFE, 0xF5, 0xEB)
+                    col_fill_color = COLOR_WHITE
                     col_line_color = COLOR_BRAND_RED
                 elif first_card_style == 'blue':
-                    col_fill_color = RGBColor(0xEB, 0xF5, 0xFF)
-                    col_line_color = RGBColor(0x4A, 0x90, 0xD9)
+                    col_fill_color = COLOR_WHITE
+                    col_line_color = COLOR_PRIMARY_BLUE
             
             # 列背景框
             shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, y_start, col_width, col_height)
@@ -1098,7 +1103,7 @@ class PptxGenerator:
                         if cc.get('style') == 'accent':
                             run.font.color.rgb = COLOR_BRAND_RED
                         elif cc.get('style') == 'blue':
-                            run.font.color.rgb = RGBColor(0x4A, 0x90, 0xD9)
+                            run.font.color.rgb = COLOR_PRIMARY_BLUE
                         else:
                             run.font.color.rgb = COLOR_DARK_TEXT
                         self._set_font_east_asian(run, FONT_TITLE)
@@ -1152,7 +1157,7 @@ class PptxGenerator:
                     run.font.color.rgb = COLOR_DARK_TEXT
                     self._set_font_east_asian(run, FONT_BODY)
 
-            # 高亮框 — 18pt W3 品牌红
+            # 高亮框 — 18pt W3 南京主蓝
             if col.get('highlight'):
                 hl = col['highlight']
                 if len(hl) > 300:
@@ -1194,7 +1199,7 @@ class PptxGenerator:
             # 根据风格设置颜色
             step_style = step.get('style', 'default')
             if step_style == 'accent':
-                shape.fill.fore_color.rgb = RGBColor(0xFA, 0xF6, 0xEE)
+                shape.fill.fore_color.rgb = COLOR_WHITE
                 shape.line.color.rgb = COLOR_BRAND_RED
             else:
                 shape.fill.fore_color.rgb = COLOR_CREAM
@@ -1320,11 +1325,11 @@ class PptxGenerator:
             shape.fill.solid()
             label = pc.get('label', '')
             if 'On' in label or '同策略' in label:
-                shape.fill.fore_color.rgb = RGBColor(0xEB, 0xF5, 0xFF)  # 淡蓝
-                shape.line.color.rgb = RGBColor(0x4A, 0x90, 0xD9)      # 蓝色边框
+                shape.fill.fore_color.rgb = COLOR_WHITE  # 淡蓝
+                shape.line.color.rgb = COLOR_PRIMARY_BLUE      # 蓝色边框
             elif 'Off' in label or '异策略' in label:
-                shape.fill.fore_color.rgb = RGBColor(0xFE, 0xF5, 0xEB)  # 暖橙
-                shape.line.color.rgb = COLOR_BRAND_RED                   # 红色边框
+                shape.fill.fore_color.rgb = COLOR_WHITE  # 暖橙
+                shape.line.color.rgb = COLOR_BRAND_RED                   # 南京主蓝强调边框
             else:
                 shape.fill.fore_color.rgb = COLOR_CREAM
                 shape.line.color.rgb = COLOR_LINE_GRAY
@@ -1371,7 +1376,7 @@ class PptxGenerator:
                 run.font.size = Pt(28)
                 run.font.bold = True
                 if 'On' in label or '同策略' in label:
-                    run.font.color.rgb = RGBColor(0x4A, 0x90, 0xD9)
+                    run.font.color.rgb = COLOR_PRIMARY_BLUE
                 else:
                     run.font.color.rgb = COLOR_BRAND_RED
                 self._set_font_east_asian(run, FONT_TITLE)
@@ -1891,7 +1896,7 @@ class PptxGenerator:
         
         shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, code_left, y_cursor, code_width, code_height)
         shape.fill.solid()
-        shape.fill.fore_color.rgb = RGBColor(0x1E, 0x1E, 0x1E)
+        shape.fill.fore_color.rgb = COLOR_BLACK
         shape.line.fill.background()
         # 圆角
         shape.adjustments[0] = 0.02
@@ -2120,10 +2125,10 @@ class PptxGenerator:
         self.slide_count += 1
         
         # 设置背景
-        bg_path = BG_COVER if page_type in ('cover', 'section', 'end') else BG_CONTENT
+        bg_path = {'cover': BG_COVER, 'section': BG_SECTION, 'end': BG_END}.get(page_type, BG_CONTENT)
         self._set_background(slide, str(bg_path))
         
-        # 添加 Logo
+        # 南京模板默认不强制插入旧横版 Logo
         self._add_logo(slide, page_type)
         
         return slide
@@ -2141,16 +2146,8 @@ class PptxGenerator:
         sp_tree.insert(2, pic_elem)  # 在 spPr 后面
     
     def _add_logo(self, slide, page_type: str):
-        """添加 Logo"""
-        if not LOGO_MAIN.exists():
-            return
-        
-        if page_type in ('cover', 'section', 'end'):
-            x, y = LOGO_COVER_X, LOGO_COVER_Y
-        else:
-            x, y = LOGO_CONTENT_X, LOGO_CONTENT_Y
-        
-        slide.shapes.add_picture(str(LOGO_MAIN), x, y, LOGO_W, LOGO_H)
+        """南京模板默认不强制插入横版 Logo；保留钩子兼容未来官方 Logo。"""
+        return
     
     def _add_textbox(self, slide, left, top, width, height):
         """添加文本框，返回 text_frame"""
@@ -2205,7 +2202,7 @@ class PptxGenerator:
         solidFill = etree.SubElement(tcPr, qn('a:solidFill'))
         if is_header:
             srgbClr = etree.SubElement(solidFill, qn('a:srgbClr'))
-            srgbClr.set('val', 'D4A574')  # 暖杏色表头
+            srgbClr.set('val', '3272DC')  # 南京主蓝表头
         else:
             srgbClr = etree.SubElement(solidFill, qn('a:srgbClr'))
             srgbClr.set('val', 'FFFFFF')  # 白色数据行
@@ -2237,7 +2234,7 @@ class PptxGenerator:
 # ---------- 主入口 ----------
 
 def main():
-    parser = argparse.ArgumentParser(description='HTML → 腾讯云架构师长沙同盟模板 PPT')
+    parser = argparse.ArgumentParser(description='HTML → 腾讯云架构师南京城市沙龙模板 PPT')
     parser.add_argument('--input', '-i', required=True, help='输入 HTML 文件路径')
     parser.add_argument('--output', '-o', required=True, help='输出 PPTX 文件路径')
     parser.add_argument('--title', '-t', default='', help='PPT 主标题（默认从 HTML title/h1 提取）')
@@ -2303,7 +2300,7 @@ def main():
         print(f"  标题: {title}")
         print(f"  内容块: {len(blocks)}")
     print(f"  字体规范: 标题36-44pt {FONT_TITLE} / 卡片标题24pt / 正文20pt {FONT_BODY}")
-    print(f"  品牌合规: 配色=品牌安全色, 背景=模板背景, Logo=已插入")
+    print(f"  品牌合规: 配色=品牌安全色, 背景=模板背景, Logo=南京模板不强制插入")
 
 
 if __name__ == '__main__':

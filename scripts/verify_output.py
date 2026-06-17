@@ -6,7 +6,7 @@ verify_output.py - HTML->PPT 输出验证脚本
 功能：
 - 检查每页 shapes 数量是否合理（>=3）
 - 验证字号范围（标题 40pt / 章节 48pt / 正文 20pt）
-- 检查 Logo 位置和尺寸
+- 南京模板默认不强制插入横版 Logo
 - 验证背景图存在
 - 对比原始 HTML 页面数（如提供）
 - 输出通过/失败报告
@@ -26,9 +26,9 @@ except ImportError:
 
 
 # === 常量 ===
-TEMPLATE_WIDTH_INCH = 20.02
-TEMPLATE_HEIGHT_INCH = 11.26
-MIN_SHAPES_PER_SLIDE = 3
+TEMPLATE_WIDTH_INCH = 20.00
+TEMPLATE_HEIGHT_INCH = 11.25
+MIN_SHAPES_PER_SLIDE = 2  # 南京模板不强制插入 Logo，章节/结尾页可只有背景+文本
 LOGO_WIDTH_INCH = 4.88
 LOGO_HEIGHT_INCH = 0.53
 LOGO_TOLERANCE_INCH = 0.5  # Logo 位置容差
@@ -141,41 +141,8 @@ def check_font_sizes(slide, slide_num, result, strict=False):
 
 
 def check_logo(slide, slide_num, result, slide_width_inch):
-    """检查 Logo 存在和位置"""
-    logo_found = False
-
-    for shape in slide.shapes:
-        if hasattr(shape, 'image') and shape.image:
-            w_inch = shape.width / 914400
-            h_inch = shape.height / 914400
-            x_inch = shape.left / 914400
-            y_inch = shape.top / 914400
-
-            # 判断是否为 Logo（通过尺寸比例）
-            aspect = w_inch / h_inch if h_inch > 0 else 0
-            logo_aspect = LOGO_WIDTH_INCH / LOGO_HEIGHT_INCH  # ~9.2
-
-            if abs(aspect - logo_aspect) < 2.0 and w_inch > 3.0 and w_inch < 7.0:
-                logo_found = True
-
-                # 判断位置：左上 or 右上
-                if x_inch < slide_width_inch / 2:
-                    # 左上 Logo
-                    pos = LOGO_POSITIONS['left']
-                    if not (pos['x_range'][0] <= x_inch <= pos['x_range'][1]):
-                        result.warn(slide_num, f"Logo x={x_inch:.1f}\" outside expected range")
-                else:
-                    # 右上 Logo
-                    pos = LOGO_POSITIONS['right']
-                    if not (pos['x_range'][0] <= x_inch <= pos['x_range'][1]):
-                        result.warn(slide_num, f"Logo x={x_inch:.1f}\" outside expected range")
-
-                break
-
-    if not logo_found:
-        result.warn(slide_num, "No Logo detected")
-    else:
-        result.ok(slide_num, "Logo present")
+    """南京模板默认不强制插入横版 Logo。"""
+    result.ok(slide_num, "Nanjing template: logo insertion not required")
 
 
 def check_background(slide, slide_num, result, slide_width_emu, slide_height_emu):

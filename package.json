@@ -1,0 +1,9 @@
+{
+  "name": "tencent-architect-nanjing-ppt-adapter",
+  "version": "4.1.0",
+  "private": false,
+  "description": "High-fidelity HTML/PPTX to Tencent Architect Nanjing salon PPT adapter",
+  "optionalDependencies": {
+    "puppeteer-core": "^24.31.0"
+  }
+}

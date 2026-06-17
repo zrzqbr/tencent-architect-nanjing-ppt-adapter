@@ -11,7 +11,7 @@
 
 **腾讯云架构师南京城市沙龙 · PPT 模板适配 Skill**
 
-<sub>一键将任意 PPT 适配为专属腾讯云架构师南京城市沙龙风格 — 只锁品牌，不碰内容</sub>
+<sub>一键将 PPT / HTML slide deck 适配为腾讯云架构师南京城市沙龙风格 — 动态分析输入，只锁品牌，不碰内容</sub>
 
 <br>
 
@@ -30,7 +30,7 @@
 > 它的唯一职责：在不破坏讲师/嘉宾创作成果的前提下，让最终 PPT 继承统一模板的品牌资产。
 > 适用于沙龙分享、技术讲座、架构评审等场景。
 >
-> **核心原则：** 只锁品牌资产（背景、字体、配色），其他一切不强制。
+> **核心原则：** 每次先分析用户给到的 PPT / HTML，而不是固化某一份案例；只锁品牌资产（背景、字体、配色），其他一切不强制。
 
 <table>
   <tr>
@@ -73,33 +73,35 @@
 
 <table>
   <tr>
+    <th align="center" width="25%">🧠 动态分析</th>
     <th align="center" width="25%">🎨 背景适配</th>
-    <th align="center" width="25%">🔤 字体统一</th>
-    <th align="center" width="25%">🎯 配色合规</th>
-    <th align="center" width="25%">✅ 输出验证</th>
+    <th align="center" width="25%">🔤 字体自适应</th>
+    <th align="center" width="25%">🧩 组件保真</th>
   </tr>
   <tr>
     <td align="center">
+      每次读取源文件<br>
+      分析页数 / 组件 / 内容密度<br>
+      不固化某一份 PPT<br>
+      动态选择策略
+    </td>
+    <td align="center">
       自动识别页面类型<br>
-      替换为南京模板背景图<br>
       封面 / 章节 / 内容 / 结尾<br>
-      智能区分
+      分别映射南京背景<br>
+      避免全页单一背景
     </td>
     <td align="center">
-      全文替换为 TencentSans<br>
-      标题 W7 / 正文 W3<br>
-      代码等宽字体保留不替换
+      TencentSans W7 / W3<br>
+      按内容丰富度调节字号<br>
+      稀疏页放大<br>
+      密集页防溢出
     </td>
     <td align="center">
-      检测禁用色自动替换<br>
-      南京 7 色安全调色板<br>
-      对比度自动修复
-    </td>
-    <td align="center">
-      背景完整性验证<br>
-      色板合规性检查<br>
-      字体一致性检测<br>
-      文字对比度验证
+      Chrome 高保真渲染<br>
+      保留卡片 / 网格 / 流程<br>
+      支持可编辑回退模式<br>
+      兼顾质量与可维护
     </td>
   </tr>
 </table>
@@ -113,11 +115,15 @@
 git clone https://github.com/zrzqbr/tencent-architect-nanjing-ppt-adapter.git
 cd tencent-architect-nanjing-ppt-adapter
 
-# 2️⃣ 安装依赖
+# 2️⃣ 安装 Python 依赖
 pip install -r requirements.txt
 
-# 3️⃣ 运行适配
+# 可选：HTML slide deck 高保真模式需要 puppeteer-core + Chrome/Edge
+npm install
+
+# 3️⃣ 运行适配（auto 会对复杂 HTML 优先使用高保真模式）
 python scripts/apply_template.py --input your.pptx --output branded.pptx
+python scripts/apply_template.py --input your.html --output branded.pptx --html-render-mode auto
 
 # 4️⃣ 验证输出
 python scripts/verify_output.py --pptx branded.pptx --strict
@@ -126,7 +132,7 @@ python scripts/verify_output.py --pptx branded.pptx --strict
 <table>
   <tr>
     <td><strong>环境要求</strong></td>
-    <td>Python 3.9+ &nbsp;·&nbsp; pip</td>
+    <td>Python 3.9+ &nbsp;·&nbsp; pip；高保真 HTML 模式需 Node.js + Chrome/Edge</td>
   </tr>
   <tr>
     <td><strong>核心依赖</strong></td>
@@ -249,6 +255,7 @@ python scripts/verify_output.py --pptx branded.pptx --strict
 | 📎 | 迁移模式需将原始 PPT 作为附件上传到对话中 |
 | ⚖️ | TencentSans 字体为腾讯品牌字体，请确认使用授权 |
 | 🚫 | 南京模板默认不强制插入旧横版 Logo |
+| 🧩 | 复杂 HTML 默认优先高保真渲染，组件还原更好，但文字层是图片；如需继续编辑文字，可使用 `--html-render-mode editable` |
 
 ---
 
@@ -264,7 +271,8 @@ tencent-architect-nanjing-ppt-adapter/
 │
 ├── 🔧 scripts/                         # 核心脚本
 │   ├── apply_template.py               # 统一入口 · 模板适配引擎
-│   ├── html_to_pptx.py                 # HTML → PPTX 核心转换
+│   ├── html_to_pptx.py                 # HTML → PPTX 可编辑结构化转换
+│   ├── high_fidelity_html_to_pptx.py   # HTML slide deck 高保真渲染转换
 │   ├── verify_output.py                # 输出质量验证
 │   ├── brand_palette.py                # 南京限定色板校验 + 上游约束注入
 │   ├── extract_template_assets.py      # 模板资产提取工具

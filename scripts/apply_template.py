@@ -2014,9 +2014,49 @@ def _run_html_pipeline(args):
     print(f"[INFO] 解析内容: {args.input}")
 
     # 检测 HTML 类型并选择解析策略
-    if html_mod.is_slide_deck_html(html_content):
+    is_slide_deck = html_mod.is_slide_deck_html(html_content)
+    html_render_mode = getattr(args, 'html_render_mode', 'auto')
+
+    if is_slide_deck and input_format == 'html' and html_render_mode in ('auto', 'high-fidelity'):
+        print(f"[INFO] 检测到幻灯片型 HTML（slide deck）")
+        print(f"[INFO] HTML 渲染模式: {html_render_mode}，优先尝试高保真组件渲染")
+        try:
+            hf_module_path = SCRIPT_DIR / "high_fidelity_html_to_pptx.py"
+            spec_hf = importlib.util.spec_from_file_location("high_fidelity_html_to_pptx", str(hf_module_path))
+            hf_mod = importlib.util.module_from_spec(spec_hf)
+            sys.modules[spec_hf.name] = hf_mod
+            spec_hf.loader.exec_module(hf_mod)
+            report = hf_mod.render_html_to_pptx(
+                args.input,
+                args.output,
+                keep_images=getattr(args, 'keep_rendered_images', False),
+            )
+            print(f"[OK] 已生成高保真南京模板 PPT: {args.output}")
+            print(f"     共 {report['slides']} 页")
+            print()
+            print("=" * 60)
+            print("[适配报告 - HTML 高保真渲染 → 南京模板 PPT]")
+            print("=" * 60)
+            print(f"  输入文件: {args.input}")
+            print(f"  输出文件: {args.output}")
+            print(f"  总页数:   {report['slides']}")
+            print("  模式:     高保真（Chrome 渲染原始组件 + 南京模板背景叠加）")
+            print("  字体:     TencentSans W3/W7 注入渲染；按内容密度自适应放大")
+            print("  配色:     南京 7 色板 CSS 覆盖")
+            print("  页面分析:")
+            for item in report['analysis']:
+                print(f"    Slide {item['index']:>2}: {item['slide_type']:<7} | density={item['density']:<6} | font_scale={item['font_scale']:.2f} | text={item['text_length']:<4} | components={item['component_count']:<2} | {item['title'][:36]}")
+            print("=" * 60)
+            return
+        except Exception as e:
+            if html_render_mode == 'high-fidelity':
+                print(f"[ERROR] 高保真渲染失败: {e}", file=sys.stderr)
+                sys.exit(1)
+            print(f"[WARN] 高保真渲染不可用，回退到可编辑结构化生成: {e}")
+
+    if is_slide_deck:
         # 幻灯片型 HTML
-        print(f"[INFO] 检测到幻灯片型 HTML（slide deck），按页面结构解析")
+        print(f"[INFO] 检测到幻灯片型 HTML（slide deck），按可编辑结构解析")
         slide_contents = html_mod.parse_html_slides(html_content)
         print(f"[INFO] 解析得到 {len(slide_contents)} 个幻灯片页面")
         
@@ -2103,6 +2143,10 @@ def main():
     ap.add_argument("--subtitle", "-s", default="", help="PPT 副标题 [仅 HTML/MD 模式]")
     ap.add_argument("--author", "-a", default="", help="作者/演讲者 [仅 HTML/MD 模式]")
     ap.add_argument("--encoding", default="utf-8", help="输入文件编码（默认 utf-8）[仅 HTML/MD 模式]")
+    ap.add_argument("--html-render-mode", choices=["auto", "high-fidelity", "editable"], default="auto",
+                    help="HTML slide deck 渲染模式：auto=优先高保真失败回退；high-fidelity=Chrome 渲染组件；editable=python-pptx 可编辑结构化生成 [仅 HTML 模式]")
+    ap.add_argument("--keep-rendered-images", action="store_true",
+                    help="高保真模式下保留每页渲染 PNG，便于人工检查 [仅 HTML 模式]")
 
     args = ap.parse_args()
 
